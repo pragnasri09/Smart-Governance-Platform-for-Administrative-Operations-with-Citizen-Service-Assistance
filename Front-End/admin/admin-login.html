@@ -1,60 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>CivicPulse - Admin Login</title>
-
-    <link rel="stylesheet" href="../css/admin.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Secure CivicPulse account access">
+  <title>CivicPulse | Secure Account Access</title>
+  <link rel="stylesheet" href="../css/admin.css">
 </head>
-
 <body>
-
-    <div class="login-container">
-
-        <div class="login-box">
-
-            <h1>CivicPulse</h1>
-            <h2>Admin Login</h2>
-
-            <p class="login-subtitle">
-                Smart Government Management Platform
-            </p>
-
-            <form id="adminLoginForm">
-
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        placeholder="Enter your email"
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        placeholder="Enter your password"
-                        required
-                    >
-                </div>
-
-                <button type="submit">Login</button>
-
-                <p id="loginMessage"></p>
-
-            </form>
-
-        </div>
-
-    </div>
-
-    <script src="../js/login.js"></script>
-
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="CivicPulse home"><span class="brand-mark" aria-hidden="true">CP</span><span>Civic<span>Pulse</span></span></a>
+    <p>Smart Government Management Platform</p>
+    <nav id="mainNav" class="main-nav hidden" aria-label="Account navigation">
+      <button id="homeButton" type="button">Home</button>
+      <button id="navPasswordButton" type="button">Update password</button>
+      <button id="logoutButton" type="button">Sign out</button>
+    </nav>
+  </header>
+  <main id="authScreen" class="page-shell">
+    <section class="intro" aria-labelledby="intro-title">
+      <p class="eyebrow">Secure citizen portal</p>
+      <h1 id="intro-title">Public services, safely connected.</h1>
+      <p>Create your CivicPulse account to securely access government services and updates.</p>
+      <ul class="security-list">
+        <li>Passwords are salted and securely hashed.</li>
+        <li>Authenticated requests require a valid session.</li>
+        <li>Account activity is protected against repeated sign-in attempts.</li>
+      </ul>
+    </section>
+    <section class="account-card" aria-labelledby="form-title">
+      <div class="card-heading"><p class="eyebrow" id="form-kicker">Welcome back</p><h2 id="form-title">Sign in to CivicPulse</h2></div>
+      <div id="message" class="message" role="status" aria-live="polite"></div>
+      <form id="loginForm" novalidate>
+        <label for="loginEmail">Email address</label><input id="loginEmail" name="email" type="email" autocomplete="email" required>
+        <label for="loginPassword">Password</label><input id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">Sign in securely</button>
+      </form>
+      <form id="registerForm" class="hidden" novalidate>
+        <label for="registerName">Full name</label><input id="registerName" name="name" type="text" autocomplete="name" minlength="2" maxlength="80" required>
+        <label for="registerEmail">Email address</label><input id="registerEmail" name="email" type="email" autocomplete="email" required>
+        <label for="registerPassword">Create password</label><input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required aria-describedby="passwordHelp"><small id="passwordHelp">At least 12 characters, with uppercase, lowercase, number, and symbol.</small>
+        <button type="submit">Create secure account</button>
+      </form>
+      <p class="form-switch" id="formSwitch">New to CivicPulse? <button id="showRegister" class="text-button" type="button">Create an account</button></p>
+    </section>
+  </main>
+  <main id="homeScreen" class="home-screen hidden">
+    <section class="welcome-banner"><p class="eyebrow">Your CivicPulse dashboard</p><h1 id="welcomeTitle">Welcome to CivicPulse</h1><p id="accountDetails"></p></section>
+    <section class="feature-grid" aria-label="CivicPulse services">
+      <article><span class="feature-icon">01</span><h2>Track municipal applications</h2><p>Follow every application from submission to review and completion, with clear status updates at each stage.</p></article>
+      <article><span class="feature-icon">02</span><h2>Report civic concerns</h2><p>Raise issues such as sanitation, roads, water, and street lighting so the right municipal team can respond.</p></article>
+      <article><span class="feature-icon">03</span><h2>See progress transparently</h2><p>CivicPulse keeps citizens and municipal departments connected, helping resolve concerns with accountability.</p></article>
+    </section>
+    <section id="passwordPanel" class="password-panel hidden" aria-labelledby="password-title">
+      <div><p class="eyebrow">Account security</p><h2 id="password-title">Update your password</h2><p>Use a unique, strong password to keep your CivicPulse account protected.</p></div>
+      <form id="passwordForm" novalidate>
+        <div id="passwordMessage" class="message" role="status" aria-live="polite"></div>
+        <label for="currentPassword">Current password</label><input id="currentPassword" type="password" autocomplete="current-password" required>
+        <label for="newPassword">New password</label><input id="newPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+        <button type="submit">Save new password</button>
+      </form>
+    </section>
+  </main>
+  <footer class="site-footer"><p>© 2026 CivicPulse. Secure digital public services.</p><p>Never share your password or verification codes.</p></footer>
+  <script src="../js/login.js"></script>
 </body>
 </html>
