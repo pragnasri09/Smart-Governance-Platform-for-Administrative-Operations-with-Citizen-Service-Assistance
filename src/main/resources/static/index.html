@@ -1,10 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CivicPulse | Complaint Management</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-$END$
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-icon">CP</div>
+
+            <div>
+                <h2>CivicPulse</h2>
+                <span>Smart Governance</span>
+            </div>
+        </div>
+
+        <nav>
+            <button class="nav-item active" onclick="showDashboard()">
+                <span>▦</span>
+                Dashboard
+            </button>
+
+            <button class="nav-item" onclick="showCreateComplaint()">
+                <span>＋</span>
+                New Complaint
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span class="status-dot"></span>
+            Note: This frontend is for demo purposes only. Actual frontend interface may differ.
+        </div>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main">
+
+        <!-- Header -->
+        <header class="header">
+
+            <div>
+                <p class="eyebrow">CIVICPULSE / OPERATIONS</p>
+                <h1 id="pageTitle">Complaint Management</h1>
+            </div>
+
+            <button class="refresh-btn" onclick="loadDashboard()">
+                ↻ Refresh
+            </button>
+
+        </header>
+
+
+        <!-- Dashboard -->
+        <section id="dashboardView">
+
+            <!-- Statistics -->
+            <div class="stats">
+
+                <div class="stat-card">
+                    <div class="stat-icon">◉</div>
+                    <div>
+                        <span>Total Complaints</span>
+                        <strong id="totalCount">0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon yellow">◌</div>
+                    <div>
+                        <span>Pending</span>
+                        <strong id="pendingCount">0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon blue">↗</div>
+                    <div>
+                        <span>In Progress</span>
+                        <strong id="progressCount">0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">✓</div>
+                    <div>
+                        <span>Resolved</span>
+                        <strong id="resolvedCount">0</strong>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- Complaints -->
+            <div class="section-header">
+
+                <div>
+                    <h2>Recent Complaints</h2>
+                    <p>Live data from the CivicPulse backend</p>
+                </div>
+
+                <button class="primary-btn"
+                        onclick="showCreateComplaint()">
+                    + New Complaint
+                </button>
+
+            </div>
+
+            <div id="complaintsContainer" class="complaints">
+                <div class="loading">
+                    Loading complaints...
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- Complaint Details -->
+        <section id="detailsView" class="hidden">
+
+            <button class="back-btn" onclick="showDashboard()">
+                ← Back to complaints
+            </button>
+
+            <div id="complaintDetails"></div>
+
+        </section>
+
+
+        <!-- Create Complaint -->
+        <section id="createView" class="hidden">
+
+            <button class="back-btn" onclick="showDashboard()">
+                ← Back to dashboard
+            </button>
+
+            <div class="form-card">
+
+                <div class="section-header">
+                    <div>
+                        <p class="eyebrow">NEW REQUEST</p>
+                        <h2>Create Complaint</h2>
+                        <p>Submit a new civic issue to the system.</p>
+                    </div>
+                </div>
+
+                <form id="complaintForm">
+
+                    <div class="form-grid">
+
+                        <div class="form-group full">
+                            <label>Complaint Title</label>
+
+                            <input
+                                type="text"
+                                id="title"
+                                placeholder="e.g. Large pothole near college"
+                                required>
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>Category</label>
+
+                            <select id="category" required>
+                                <option value="">Select category</option>
+                                <option value="ROAD">Road</option>
+                                <option value="WATER">Water</option>
+                                <option value="ELECTRICITY">Electricity</option>
+                                <option value="SANITATION">Sanitation</option>
+                                <option value="GARBAGE">Garbage</option>
+                                <option value="STREETLIGHT">Streetlight</option>
+                                <option value="OTHER">Other</option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>Priority</label>
+
+                            <select id="priority" required>
+                                <option value="LOW">Low</option>
+                                <option value="MEDIUM" selected>Medium</option>
+                                <option value="HIGH">High</option>
+                                <option value="CRITICAL">Critical</option>
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group full">
+
+                            <label>Description</label>
+
+                            <textarea
+                                id="description"
+                                rows="5"
+                                placeholder="Describe the issue..."
+                                required></textarea>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>Latitude</label>
+
+                            <input
+                                type="number"
+                                step="any"
+                                id="latitude"
+                                placeholder="18.6486">
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>Longitude</label>
+
+                            <input
+                                type="number"
+                                step="any"
+                                id="longitude"
+                                placeholder="73.7614">
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button
+                            type="button"
+                            class="secondary-btn"
+                            onclick="showDashboard()">
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="primary-btn">
+                            Submit Complaint
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+
+<script src="app.js"></script>
+
 </body>
 </html>

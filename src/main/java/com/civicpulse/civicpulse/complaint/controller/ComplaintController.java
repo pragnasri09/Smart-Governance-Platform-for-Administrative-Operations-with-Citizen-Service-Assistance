@@ -1,10 +1,11 @@
 package com.civicpulse.civicpulse.complaint.controller;
 
+import com.civicpulse.civicpulse.complaint.dto.AssignComplaintRequest;
 import com.civicpulse.civicpulse.complaint.entity.Complaint;
+import com.civicpulse.civicpulse.complaint.enums.ComplaintStatus;
 import com.civicpulse.civicpulse.complaint.service.ComplaintService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -46,5 +47,25 @@ public class ComplaintController {
     public List<Complaint> getAllComplaints() {
 
         return complaintService.getAllComplaints();
+    }
+
+    @PutMapping("/{id}/status")
+    public Complaint updateStatus(
+            @PathVariable Long id,
+            @RequestParam ComplaintStatus status) {
+
+        return complaintService.updateStatus(id, status);
+    }
+
+    @PostMapping("/{id}/assign")
+    public Complaint assignComplaint(
+            @PathVariable Long id,
+            @RequestBody AssignComplaintRequest request) {
+
+        return complaintService.assignComplaint(
+                id,
+                request.getDepartmentId(),
+                request.getAssignedBy()
+        );
     }
 }
