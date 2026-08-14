@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>CivicPulse | Complaint Management</title>
+    <title>CivicPulse | Smart Governance</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -14,178 +14,452 @@
 
 <div class="app">
 
-    <!-- Sidebar -->
+    <!-- ================= SIDEBAR ================= -->
+
     <aside class="sidebar">
 
         <div class="brand">
-            <div class="brand-icon">CP</div>
+
+            <div class="brand-icon">
+                CP
+            </div>
 
             <div>
                 <h2>CivicPulse</h2>
                 <span>Smart Governance</span>
             </div>
+
         </div>
 
+
         <nav>
-            <button class="nav-item active" onclick="showDashboard()">
-                <span>▦</span>
-                Dashboard
+
+            <button
+                id="citizenTab"
+                class="nav-item active"
+                onclick="showCitizen()">
+
+                <span>👤</span>
+                Citizen
+
             </button>
 
-            <button class="nav-item" onclick="showCreateComplaint()">
-                <span>＋</span>
-                New Complaint
+            <button
+                id="officerTab"
+                class="nav-item"
+                onclick="showOfficer()">
+
+                <span>🛡️</span>
+                Officer
+
             </button>
+
         </nav>
 
+
         <div class="sidebar-footer">
+
             <span class="status-dot"></span>
-            Note: This frontend is for demo purposes only. Actual frontend interface may differ.
+
+            Backend Connected
+
         </div>
 
     </aside>
 
 
-    <!-- Main Content -->
+    <!-- ================= MAIN ================= -->
+
     <main class="main">
 
-        <!-- Header -->
+
+        <!-- HEADER -->
+
         <header class="header">
 
             <div>
-                <p class="eyebrow">CIVICPULSE / OPERATIONS</p>
-                <h1 id="pageTitle">Complaint Management</h1>
+
+                <p class="eyebrow">
+                    CIVICPULSE / OPERATIONS
+                </p>
+
+                <h1 id="pageTitle">
+                    Complaint Management
+                </h1>
+
             </div>
 
-            <button class="refresh-btn" onclick="loadDashboard()">
+
+            <button
+                class="refresh-btn"
+                onclick="refreshCurrentModule()">
+
                 ↻ Refresh
+
             </button>
 
         </header>
 
 
-        <!-- Dashboard -->
-        <section id="dashboardView">
 
-            <!-- Statistics -->
-            <div class="stats">
+        <!-- =================================================
+             CITIZEN MODULE
+        ================================================== -->
 
-                <div class="stat-card">
-                    <div class="stat-icon">◉</div>
-                    <div>
-                        <span>Total Complaints</span>
-                        <strong id="totalCount">0</strong>
-                    </div>
-                </div>
+        <section id="citizenView">
 
-                <div class="stat-card">
-                    <div class="stat-icon yellow">◌</div>
-                    <div>
-                        <span>Pending</span>
-                        <strong id="pendingCount">0</strong>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon blue">↗</div>
-                    <div>
-                        <span>In Progress</span>
-                        <strong id="progressCount">0</strong>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon green">✓</div>
-                    <div>
-                        <span>Resolved</span>
-                        <strong id="resolvedCount">0</strong>
-                    </div>
-                </div>
-
-            </div>
-
-
-            <!-- Complaints -->
-            <div class="section-header">
+            <div class="role-banner">
 
                 <div>
-                    <h2>Recent Complaints</h2>
-                    <p>Live data from the CivicPulse backend</p>
+                    <p class="eyebrow">CITIZEN PORTAL</p>
+
+                    <h2>Welcome to CivicPulse</h2>
+
+                    <p>
+                        Report civic issues and track their resolution.
+                    </p>
                 </div>
 
-                <button class="primary-btn"
-                        onclick="showCreateComplaint()">
-                    + New Complaint
+                <button
+                    class="primary-btn"
+                    onclick="showCreateComplaint()">
+
+                    + Report a Problem
+
                 </button>
 
             </div>
 
-            <div id="complaintsContainer" class="complaints">
+
+            <div class="stats">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        ◉
+                    </div>
+
+                    <div>
+                        <span>My Complaints</span>
+                        <strong id="citizenTotal">0</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon yellow">
+                        ◌
+                    </div>
+
+                    <div>
+                        <span>Pending</span>
+                        <strong id="citizenPending">0</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon blue">
+                        ↗
+                    </div>
+
+                    <div>
+                        <span>In Progress</span>
+                        <strong id="citizenProgress">0</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon green">
+                        ✓
+                    </div>
+
+                    <div>
+                        <span>Resolved</span>
+                        <strong id="citizenResolved">0</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>My Complaints</h2>
+
+                    <p>
+                        Track the status of complaints you have submitted.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="citizenComplaintsContainer"
+                class="complaints">
+
                 <div class="loading">
                     Loading complaints...
                 </div>
+
             </div>
 
         </section>
 
 
-        <!-- Complaint Details -->
-        <section id="detailsView" class="hidden">
 
-            <button class="back-btn" onclick="showDashboard()">
+        <!-- =================================================
+             OFFICER MODULE
+        ================================================== -->
+
+        <section
+            id="officerView"
+            class="hidden">
+
+            <div class="role-banner">
+
+                <div>
+
+                    <p class="eyebrow">OFFICER PORTAL</p>
+
+                    <h2>Operations Dashboard</h2>
+
+                    <p>
+                        Manage complaints, assignments and resolutions.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="stats">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">
+                        ◉
+                    </div>
+
+                    <div>
+                        <span>Total Complaints</span>
+                        <strong id="officerTotal">0</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon yellow">
+                        ◌
+                    </div>
+
+                    <div>
+                        <span>Pending</span>
+                        <strong id="officerPending">0</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon blue">
+                        ↗
+                    </div>
+
+                    <div>
+                        <span>In Progress</span>
+                        <strong id="officerProgress">0</strong>
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon green">
+                        ✓
+                    </div>
+
+                    <div>
+                        <span>Resolved</span>
+                        <strong id="officerResolved">0</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="section-header">
+
+                <div>
+
+                    <h2>Complaint Queue</h2>
+
+                    <p>
+                        Review and manage citizen complaints.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="officerComplaintsContainer"
+                class="complaints">
+
+                <div class="loading">
+                    Loading complaints...
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             COMPLAINT DETAILS
+        ================================================== -->
+
+        <section
+            id="detailsView"
+            class="hidden">
+
+            <button
+                class="back-btn"
+                onclick="showComplaints()">
+
                 ← Back to complaints
+
             </button>
+
 
             <div id="complaintDetails"></div>
 
         </section>
 
 
-        <!-- Create Complaint -->
-        <section id="createView" class="hidden">
 
-            <button class="back-btn" onclick="showDashboard()">
+        <!-- =================================================
+             CREATE COMPLAINT
+        ================================================== -->
+
+        <section
+            id="createView"
+            class="hidden">
+
+            <button
+                class="back-btn"
+                onclick="showComplaints()">
+
                 ← Back to dashboard
+
             </button>
+
 
             <div class="form-card">
 
                 <div class="section-header">
+
                     <div>
-                        <p class="eyebrow">NEW REQUEST</p>
-                        <h2>Create Complaint</h2>
-                        <p>Submit a new civic issue to the system.</p>
+
+                        <p class="eyebrow">
+                            NEW REQUEST
+                        </p>
+
+                        <h2>
+                            Create Complaint
+                        </h2>
+
+                        <p>
+                            Submit a new civic issue.
+                        </p>
+
                     </div>
+
                 </div>
+
 
                 <form id="complaintForm">
 
+
                     <div class="form-grid">
 
+
                         <div class="form-group full">
-                            <label>Complaint Title</label>
+
+                            <label>
+                                Complaint Title
+                            </label>
 
                             <input
                                 type="text"
                                 id="title"
                                 placeholder="e.g. Large pothole near college"
                                 required>
+
                         </div>
 
 
                         <div class="form-group">
 
-                            <label>Category</label>
+                            <label>
+                                Category
+                            </label>
 
-                            <select id="category" required>
-                                <option value="">Select category</option>
-                                <option value="ROAD">Road</option>
-                                <option value="WATER">Water</option>
-                                <option value="ELECTRICITY">Electricity</option>
-                                <option value="SANITATION">Sanitation</option>
-                                <option value="GARBAGE">Garbage</option>
-                                <option value="STREETLIGHT">Streetlight</option>
-                                <option value="OTHER">Other</option>
+                            <select
+                                id="category"
+                                required>
+
+                                <option value="">
+                                    Select category
+                                </option>
+
+                                <option value="ROAD">
+                                    Road
+                                </option>
+
+                                <option value="WATER">
+                                    Water
+                                </option>
+
+                                <option value="ELECTRICITY">
+                                    Electricity
+                                </option>
+
+                                <option value="SANITATION">
+                                    Sanitation
+                                </option>
+
+                                <option value="GARBAGE">
+                                    Garbage
+                                </option>
+
+                                <option value="STREETLIGHT">
+                                    Streetlight
+                                </option>
+
+                                <option value="OTHER">
+                                    Other
+                                </option>
+
                             </select>
 
                         </div>
@@ -193,13 +467,34 @@
 
                         <div class="form-group">
 
-                            <label>Priority</label>
+                            <label>
+                                Priority
+                            </label>
 
-                            <select id="priority" required>
-                                <option value="LOW">Low</option>
-                                <option value="MEDIUM" selected>Medium</option>
-                                <option value="HIGH">High</option>
-                                <option value="CRITICAL">Critical</option>
+                            <select
+                                id="priority"
+                                required>
+
+                                <option value="LOW">
+                                    Low
+                                </option>
+
+                                <option
+                                    value="MEDIUM"
+                                    selected>
+
+                                    Medium
+
+                                </option>
+
+                                <option value="HIGH">
+                                    High
+                                </option>
+
+                                <option value="CRITICAL">
+                                    Critical
+                                </option>
+
                             </select>
 
                         </div>
@@ -207,7 +502,9 @@
 
                         <div class="form-group full">
 
-                            <label>Description</label>
+                            <label>
+                                Description
+                            </label>
 
                             <textarea
                                 id="description"
@@ -220,7 +517,9 @@
 
                         <div class="form-group">
 
-                            <label>Latitude</label>
+                            <label>
+                                Latitude
+                            </label>
 
                             <input
                                 type="number"
@@ -233,7 +532,9 @@
 
                         <div class="form-group">
 
-                            <label>Longitude</label>
+                            <label>
+                                Longitude
+                            </label>
 
                             <input
                                 type="number"
@@ -243,6 +544,7 @@
 
                         </div>
 
+
                     </div>
 
 
@@ -251,14 +553,157 @@
                         <button
                             type="button"
                             class="secondary-btn"
-                            onclick="showDashboard()">
+                            onclick="showComplaints()">
+
                             Cancel
+
                         </button>
+
 
                         <button
                             type="submit"
                             class="primary-btn">
+
                             Submit Complaint
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             CREATE RESOLUTION
+        ================================================== -->
+
+        <section
+            id="createResolutionView"
+            class="hidden">
+
+            <button
+                class="back-btn"
+                onclick="showResolutions()">
+
+                ← Back to resolutions
+
+            </button>
+
+
+            <div class="form-card">
+
+                <div class="section-header">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            RESOLUTION
+                        </p>
+
+                        <h2>
+                            Create Resolution
+                        </h2>
+
+                        <p>
+                            Record the action taken to resolve a complaint.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <form id="resolutionForm">
+
+
+                    <div class="form-grid">
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Complaint ID
+                            </label>
+
+                            <input
+                                type="number"
+                                id="resolutionComplaintId"
+                                placeholder="e.g. 1"
+                                required>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Resolved By
+                            </label>
+
+                            <input
+                                type="number"
+                                id="resolvedBy"
+                                placeholder="Official ID"
+                                required>
+
+                        </div>
+
+
+                        <div class="form-group full">
+
+                            <label>
+                                Resolution Description
+                            </label>
+
+                            <textarea
+                                id="resolutionDescription"
+                                rows="6"
+                                placeholder="Describe how the complaint was resolved..."
+                                required></textarea>
+
+                        </div>
+
+
+                        <div class="form-group full">
+
+                            <label>
+                                Evidence URL
+                            </label>
+
+                            <input
+                                type="url"
+                                id="evidenceUrl"
+                                placeholder="https://example.com/evidence.jpg">
+
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button
+                            type="button"
+                            class="secondary-btn"
+                            onclick="showResolutions()">
+
+                            Cancel
+
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            class="primary-btn">
+
+                            Create Resolution
+
                         </button>
 
                     </div>
@@ -274,11 +719,18 @@
 </div>
 
 
-<!-- Toast -->
-<div id="toast" class="toast"></div>
+
+<!-- TOAST -->
+
+<div
+    id="toast"
+    class="toast">
+</div>
 
 
-<script src="app.js"></script>
+
+<script src="/app.js"></script>
 
 </body>
+
 </html>

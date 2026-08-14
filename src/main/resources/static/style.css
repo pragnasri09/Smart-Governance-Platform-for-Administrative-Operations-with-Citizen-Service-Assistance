@@ -800,3 +800,83 @@ nav {
         grid-template-columns: 1fr;
     }
 }
+
+/* =========================
+   MODULE TABS
+========================= */
+
+.nav-item {
+    position: relative;
+}
+
+.nav-item.active::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+
+    width: 3px;
+
+    background: var(--primary);
+
+    border-radius: 0 4px 4px 0;
+}
+
+
+/* =========================
+   RESOLUTION DETAILS
+========================= */
+
+.resolution-description {
+    max-width: 500px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+.role-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 24px;
+
+    margin-bottom: 24px;
+
+    border-radius: 16px;
+
+    /* background: var(--card-bg); */
+
+    border: 1px solid var(--border);
+}
+
+
+.role-banner h2 {
+    margin: 4px 0 6px;
+}
+
+
+.role-banner p {
+    margin: 0;
+
+    color: var(--muted);
+}
+
+
+.resolution-message {
+    padding: 16px;
+
+    margin-top: 16px;
+
+    border-radius: 10px;
+
+    background: rgba(34, 197, 94, 0.08);
+
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
