@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <title>CivicPulse - Notification Service Tester</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>CivicPulse — Notification Service Tester</h1>
+
+    <p>
+      Dummy frontend for the Notifications &amp; Communication Services module
+      (Email · In-App · SMS · Push)
+    </p>
+  </header>
+
+  <div class="wrap">
+
+    <!-- Send Notification -->
+    <div class="card">
+      <h2>Send a Notification</h2>
+
+      <form id="sendForm">
+
+        <!-- Recipient Information -->
+        <div class="row">
+          <div style="flex: 1;">
+
+            <label>Recipient User ID</label>
+            <input
+              type="number"
+              id="recipientId"
+              value="1"
+              required
+            >
+          </div>
+
+          <div style="flex: 1;">
+            <label>Recipient Role</label>
+
+            <select id="recipientRole">
+              <option value="CITIZEN">CITIZEN</option>
+              <option value="OFFICIAL">OFFICIAL</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+          </div>
+
+        </div>
+
+        <!-- Notification Type -->
+        <label>Channel (Notification Type)</label>
+
+        <select id="type">
+          <option value="IN_APP">In-App</option>
+          <option value="EMAIL">Email</option>
+          <option value="SMS">SMS</option>
+          <option value="PUSH">Push</option>
+        </select>
+
+        <!-- Email -->
+        <div id="emailField" style="display: none;">
+          <label>Recipient Email</label>
+
+          <input
+            type="email"
+            id="recipientEmail"
+            placeholder="citizen@example.com"
+          >
+        </div>
+
+        <!-- Phone -->
+        <div id="phoneField" style="display: none;">
+          <label>Recipient Phone</label>
+
+          <input
+            type="text"
+            id="recipientPhone"
+            placeholder="+91 90000 00000"
+          >
+        </div>
+
+        <!-- Notification Title -->
+        <label>Title</label>
+
+        <input
+          type="text"
+          id="title"
+          value="Complaint Status Update"
+          required
+        >
+
+        <!-- Notification Message -->
+        <label>Message</label>
+
+        <textarea
+          id="message"
+          required
+        >Your complaint #101 has been marked as Resolved.</textarea>
+
+        <!-- Reference Information -->
+        <div class="row">
+
+          <div style="flex: 1;">
+            <label>Reference Type (optional)</label>
+
+            <select id="referenceType">
+              <option value="">--</option>
+              <option value="COMPLAINT">COMPLAINT</option>
+              <option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
+              <option value="FEEDBACK">FEEDBACK</option>
+            </select>
+          </div>
+
+          <div style="flex: 1;">
+            <label>Reference ID (optional)</label>
+
+            <input
+              type="number"
+              id="referenceId"
+              placeholder="e.g. 101"
+            >
+          </div>
+
+        </div>
+
+        <!-- Submit -->
+        <button type="submit">
+          Send Notification
+        </button>
+
+        <div
+          id="sendStatus"
+          class="status"
+        ></div>
+
+      </form>
+    </div>
+
+    <!-- User Inbox -->
+    <div class="card">
+
+      <h2>User Inbox</h2>
+
+      <div class="toolbar">
+
+        <input
+          type="number"
+          id="lookupUserId"
+          value="1"
+          placeholder="User ID"
+        >
+
+        <button
+          type="button"
+          class="secondary"
+          id="loadInboxBtn"
+          style="margin: 0;"
+        >
+          Load
+        </button>
+
+      </div>
+
+      <p
+        class="small"
+        id="unreadLine"
+      ></p>
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>When</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody id="inboxBody">
+          <tr>
+            <td
+              colspan="5"
+              class="small"
+            >
+              No data loaded yet.
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <!-- Admin View -->
+    <div
+      class="card"
+      style="grid-column: 1 / -1;"
+    >
+
+      <h2>Admin — All Notifications</h2>
+
+      <button
+        type="button"
+        class="secondary"
+        id="loadAllBtn"
+      >
+        Refresh
+      </button>
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Recipient</th>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Failure Reason</th>
+          </tr>
+        </thead>
+
+        <tbody id="allBody">
+          <tr>
+            <td
+              colspan="7"
+              class="small"
+            >
+              Click Refresh to load.
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+
+</body>
+</html>

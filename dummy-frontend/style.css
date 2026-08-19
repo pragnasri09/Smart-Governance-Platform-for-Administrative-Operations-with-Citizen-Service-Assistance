@@ -1,0 +1,239 @@
+:root {
+  --navy: #1e2a5e;
+  --purple: #6c4fa3;
+  --green: #5b9c56;
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --border: #dfe3ee;
+  --text: #1f2430;
+  --muted: #6b7280;
+}
+
+/* Reset */
+* {
+  box-sizing: border-box;
+}
+
+/* Base */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Header */
+header {
+  padding: 20px 28px;
+  background: linear-gradient(90deg, var(--navy), var(--purple));
+  color: #fff;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* Main Layout */
+.wrap {
+  max-width: 1100px;
+  margin: 24px auto;
+  padding: 0 20px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Responsive Layout */
+@media (max-width: 800px) {
+  .wrap {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cards */
+.card {
+  padding: 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.card h2 {
+  margin: 0 0 14px;
+  color: var(--navy);
+  font-size: 15px;
+}
+
+/* Form Elements */
+label {
+  display: block;
+  margin: 10px 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+
+  border: 1px solid var(--border);
+  border-radius: 6px;
+
+  font-family: inherit;
+  font-size: 13px;
+}
+
+textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+/* Buttons */
+button {
+  margin-top: 14px;
+  padding: 9px 16px;
+
+  background: var(--green);
+  color: #fff;
+
+  border: none;
+  border-radius: 6px;
+
+  font-size: 13px;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+button.secondary {
+  background: var(--navy);
+}
+
+/* Row */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Status Messages */
+.status {
+  display: none;
+  margin-top: 10px;
+  padding: 6px 10px;
+
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.status.ok {
+  display: block;
+  background: #e7f5e6;
+  color: #2f6b2a;
+}
+
+.status.err {
+  display: block;
+  background: #fdeaea;
+  color: #a3312a;
+}
+
+/* Table */
+table {
+  width: 100%;
+  margin-top: 4px;
+
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+th,
+td {
+  padding: 7px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Status Badges */
+.badge {
+  padding: 2px 8px;
+  border-radius: 20px;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.PENDING {
+  background: #fff4d6;
+  color: #8a6100;
+}
+
+.SENT {
+  background: #e0f0ff;
+  color: #1a5a94;
+}
+
+.FAILED {
+  background: #fdeaea;
+  color: #a3312a;
+}
+
+.READ {
+  background: #e7f5e6;
+  color: #2f6b2a;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.toolbar input {
+  flex: 1;
+}
+
+/* Small Text */
+.small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* Action Button */
+.actionBtn {
+  margin: 0;
+  padding: 3px 8px;
+
+  background: none;
+  color: var(--navy);
+
+  border: 1px solid var(--border);
+  border-radius: 5px;
+
+  font-size: 11px;
+  cursor: pointer;
+}
