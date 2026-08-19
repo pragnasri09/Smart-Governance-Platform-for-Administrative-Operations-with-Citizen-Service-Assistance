@@ -96,3 +96,16 @@ to know anything about complaints or announcements beyond the optional
 - Auth: currently open (`@CrossOrigin(origins = "*")`) for easy testing —
   restrict this and add JWT/session auth before production, matching the
   "Authentication & Authorization" service in the architecture diagram.
+
+# CivicPulse-Smart-Government-Management-Platform
+
+## Team Members
+- Pragna Sri
+- Rajesh
+- Bharath
+- Ganesh
+- Ishaan Jog
+
+## Project Description
+
+CivicPulse is a web platform that connects citizens and government departments for transparent complaint management and communication.
