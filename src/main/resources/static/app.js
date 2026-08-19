@@ -82,22 +82,6 @@ function setActiveRole(role) {
 }
 
 
-function setActiveTab(tab) {
-
-    document
-        .getElementById("complaintTab")
-        .classList.remove("active");
-
-    document
-        .getElementById("resolutionTab")
-        .classList.remove("active");
-
-    document
-        .getElementById(tab)
-        .classList.add("active");
-}
-
-
 function showCitizen() {
 
     currentView = "citizen";
@@ -135,46 +119,6 @@ function showOfficer() {
     setActiveRole("officer");
 
     loadOfficerComplaints();
-}
-
-
-function showComplaints() {
-
-    currentModule = "complaints";
-
-    hideAllViews();
-
-    document
-        .getElementById("complaintView")
-        .classList.remove("hidden");
-
-    document
-        .getElementById("pageTitle")
-        .textContent = "Complaint Management";
-
-    setActiveTab("complaintTab");
-
-    loadDashboard();
-}
-
-
-function showResolutions() {
-
-    currentModule = "resolutions";
-
-    hideAllViews();
-
-    document
-        .getElementById("resolutionView")
-        .classList.remove("hidden");
-
-    document
-        .getElementById("pageTitle")
-        .textContent = "Resolution Management";
-
-    setActiveTab("resolutionTab");
-
-    loadResolutions();
 }
 
 
@@ -582,6 +526,7 @@ function renderOfficerComplaints(
 
 function showCreateComplaint() {
 
+    currentView = "citizen";
     hideAllViews();
 
     document
@@ -591,8 +536,6 @@ function showCreateComplaint() {
     document
         .getElementById("pageTitle")
         .textContent = "Create Complaint";
-
-    setActiveTab("complaintTab");
 }
 
 
@@ -600,28 +543,30 @@ function showCreateResolution() {
 
     hideAllViews();
 
-    document
-        .getElementById("createResolutionView")
-        .classList.remove("hidden");
+    const view =
+        document.getElementById("createResolutionView");
+
+    if (!view) {
+        console.error("createResolutionView not found");
+        return;
+    }
+
+    view.classList.remove("hidden");
 
     document
         .getElementById("pageTitle")
         .textContent = "Create Resolution";
 
-    setActiveTab("resolutionTab");
+    setActiveRole("officer");
 }
 
 
 function refreshCurrentModule() {
 
-    if (currentModule === "complaints") {
-
-        loadDashboard();
-
+    if (currentView === "officer") {
+        loadOfficerComplaints();
     } else {
-
-        loadResolutions();
-
+        loadCitizenComplaints();
     }
 }
 
@@ -630,225 +575,6 @@ function refreshCurrentModule() {
 // COMPLAINT DASHBOARD
 // ======================================================
 
-async function loadDashboard() {
-
-    try {
-
-        const response =
-            await fetch(COMPLAINT_API);
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Unable to load complaints"
-            );
-
-        }
-
-
-        complaints =
-            await response.json();
-
-
-        updateStatistics();
-
-        renderComplaints();
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-        showToast(
-            "Unable to connect to backend"
-        );
-
-        document
-            .getElementById("complaintsContainer")
-            .innerHTML = `
-
-                <div class="empty">
-
-                    Backend connection failed.
-
-                    <br>
-
-                    Make sure Spring Boot is running.
-
-                </div>
-            `;
-    }
-}
-
-
-// ======================================================
-// COMPLAINT STATISTICS
-// ======================================================
-
-function updateStatistics() {
-
-    const total =
-        complaints.length;
-
-
-    const pending =
-        complaints.filter(c =>
-            c.status === "SUBMITTED" ||
-            c.status === "VERIFIED"
-        ).length;
-
-
-    const progress =
-        complaints.filter(c =>
-            c.status === "ASSIGNED" ||
-            c.status === "IN_PROGRESS"
-        ).length;
-
-
-    const resolved =
-        complaints.filter(c =>
-            c.status === "RESOLVED" ||
-            c.status === "CLOSED"
-        ).length;
-
-
-    document
-        .getElementById("totalCount")
-        .textContent = total;
-
-
-    document
-        .getElementById("pendingCount")
-        .textContent = pending;
-
-
-    document
-        .getElementById("progressCount")
-        .textContent = progress;
-
-
-    document
-        .getElementById("resolvedCount")
-        .textContent = resolved;
-}
-
-
-// ======================================================
-// COMPLAINT LIST
-// ======================================================
-
-function renderComplaints() {
-
-    const container =
-        document.getElementById(
-            "complaintsContainer"
-        );
-
-
-    if (complaints.length === 0) {
-
-        container.innerHTML = `
-
-            <div class="empty">
-
-                No complaints found.
-
-            </div>
-        `;
-
-        return;
-    }
-
-
-    container.innerHTML =
-        complaints.map(complaint => `
-
-            <div class="complaint-card">
-
-                <div class="complaint-main">
-
-                    <div>
-
-                        <div class="complaint-number">
-
-                            ${escapeHtml(
-                                complaint.complaintNumber
-                                ||
-                                "CP-" + complaint.id
-                            )}
-
-                        </div>
-
-
-                        <div class="complaint-title">
-
-                            ${escapeHtml(
-                                complaint.title
-                            )}
-
-                        </div>
-
-
-                        <div class="complaint-category">
-
-                            ${formatStatus(
-                                complaint.category
-                            )}
-
-                            · Citizen #
-
-                            ${complaint.citizenId}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="card-right">
-
-                    <span class="badge priority-${complaint.priority}">
-
-                        ${formatStatus(
-                            complaint.priority
-                        )}
-
-                    </span>
-
-
-                    <span class="badge status-${complaint.status}">
-
-                        ${formatStatus(
-                            complaint.status
-                        )}
-
-                    </span>
-
-
-                    <button
-                        class="secondary-btn"
-                        onclick="showComplaint(
-                            ${complaint.id}
-                        )">
-
-                        View
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        `).join("");
-}
-
-
-// ======================================================
-// COMPLAINT DETAILS
-// ======================================================
 
 async function showComplaint(id) {
 
@@ -890,10 +616,6 @@ async function showComplaint(id) {
             .getElementById("pageTitle")
             .textContent =
                 "Complaint Details";
-
-
-        setActiveTab("complaintTab");
-
     }
 
     catch (error) {
@@ -1204,7 +926,7 @@ function citizenComplaintActions(
 
         <button
             class="secondary-btn"
-            onclick="showCitizen()">
+            onclick="goBackFromDetails()">
 
             ← Back to My Complaints
 
@@ -1341,23 +1063,18 @@ function statusButtons(
     }
 
 
-    if (
-        complaint.status ===
-        "IN_PROGRESS"
-    ) {
+    if (complaint.status === "IN_PROGRESS") {
 
         html += `
-
+    
             <button
                 class="primary-btn"
-                onclick="showCreateResolutionForComplaint(
-                    ${complaint.id}
-                )">
-
+                onclick="showCreateResolutionForComplaint(${complaint.id})">
+    
                 + Create Resolution
-
+    
             </button>
-
+    
         `;
     }
 
@@ -1425,14 +1142,22 @@ async function changeStatus(
 // ASSIGN DEPARTMENT
 // ======================================================
 
-async function assignComplaint(
-    complaintId
-) {
+async function assignComplaint(complaintId) {
 
     const select =
         document.getElementById(
             "departmentSelect"
         );
+
+
+    if (!select) {
+
+        showToast(
+            "Department selector not found"
+        );
+
+        return;
+    }
 
 
     const departmentId =
@@ -1459,6 +1184,12 @@ async function assignComplaint(
     };
 
 
+    console.log(
+        "Assignment request:",
+        request
+    );
+
+
     try {
 
         const response =
@@ -1473,9 +1204,7 @@ async function assignComplaint(
                     },
 
                     body:
-                        JSON.stringify(
-                            request
-                        )
+                        JSON.stringify(request)
                 }
             );
 
@@ -1489,7 +1218,6 @@ async function assignComplaint(
                 error ||
                 "Assignment failed"
             );
-
         }
 
 
@@ -1506,11 +1234,35 @@ async function assignComplaint(
 
     catch (error) {
 
+        console.error(
+            "Assignment error:",
+            error
+        );
+
         showToast(
             error.message
         );
-
     }
+}
+
+
+function goBackFromDetails() {
+
+    if (currentView === "officer") {
+        showOfficer();
+    } else {
+        showCitizen();
+    }
+}
+
+
+function goBackFromCreateComplaint() {
+    showCitizen();
+}
+
+
+function goBackFromResolution() {
+    showOfficer();
 }
 
 
@@ -1950,18 +1702,65 @@ function renderResolutions(
 // CREATE RESOLUTION
 // ======================================================
 
-function showCreateResolutionForComplaint(
-    complaintId
-) {
+function showCreateResolutionForComplaint(complaintId) {
+
+    console.log(
+        "Received complaint ID:",
+        complaintId
+    );
+
+    if (!complaintId || complaintId <= 0) {
+
+        console.error(
+            "Invalid complaint ID:",
+            complaintId
+        );
+
+        showToast(
+            "Invalid complaint ID"
+        );
+
+        return;
+    }
+
 
     showCreateResolution();
 
 
-    document
-        .getElementById(
+    const idField =
+        document.getElementById(
             "resolutionComplaintId"
-        )
-        .value = complaintId;
+        );
+
+
+    const displayField =
+        document.getElementById(
+            "resolutionComplaintDisplay"
+        );
+
+
+    if (!idField || !displayField) {
+
+        console.error(
+            "Resolution complaint fields not found"
+        );
+
+        return;
+    }
+
+
+    idField.value =
+        complaintId;
+
+
+    displayField.value =
+        "Complaint #" + complaintId;
+
+
+    console.log(
+        "Resolution complaint ID set to:",
+        idField.value
+    );
 }
 
 
@@ -1978,23 +1777,21 @@ document
 
             const request = {
 
-                complaintId:
-                    Number(
-                        document
-                            .getElementById(
-                                "resolutionComplaintId"
-                            )
-                            .value
-                    ),
+                complaintId: Number(
+                    document
+                        .getElementById(
+                            "resolutionComplaintId"
+                        )
+                        .value
+                ),
 
-                resolvedBy:
-                    Number(
-                        document
-                            .getElementById(
-                                "resolvedBy"
-                            )
-                            .value
-                    ),
+                resolvedBy: Number(
+                    document
+                        .getElementById(
+                            "resolvedBy"
+                        )
+                        .value
+                ),
 
                 resolutionDescription:
                     document
@@ -2009,12 +1806,13 @@ document
                             "evidenceUrl"
                         )
                         .value
-
             };
 
-
             try {
-
+                console.log(
+                    "Resolution request:",
+                    request
+                );
                 const response =
                     await fetch(
                         RESOLUTION_API,
@@ -2065,7 +1863,7 @@ document
                     .reset();
 
 
-                showResolutions();
+                showOfficer();
 
             }
 
@@ -2118,7 +1916,7 @@ async function completeResolution(
         );
 
 
-        await loadResolutions();
+        await loadOfficerComplaints();
 
     }
 
@@ -2249,4 +2047,4 @@ function showToast(message) {
 // START
 // ======================================================
 
-loadDashboard();
+showCitizen();

@@ -344,7 +344,7 @@
 
             <button
                 class="back-btn"
-                onclick="showComplaints()">
+                onclick="goBackFromDetails()">
 
                 ← Back to complaints
 
@@ -367,7 +367,7 @@
 
             <button
                 class="back-btn"
-                onclick="showComplaints()">
+                onclick="goBackFromCreateComplaint()">
 
                 ← Back to dashboard
 
@@ -553,7 +553,7 @@
                         <button
                             type="button"
                             class="secondary-btn"
-                            onclick="showComplaints()">
+                            onclick="goBackFromCreateComplaint()">
 
                             Cancel
 
@@ -588,7 +588,7 @@
 
             <button
                 class="back-btn"
-                onclick="showResolutions()">
+                onclick="goBackFromResolution()">
 
                 ← Back to resolutions
 
@@ -627,17 +627,19 @@
                         <div class="form-group">
 
                             <label>
-                                Complaint ID
+                                Complaint
                             </label>
 
                             <input
-                                type="number"
-                                id="resolutionComplaintId"
-                                placeholder="e.g. 1"
-                                required>
+                                type="text"
+                                id="resolutionComplaintDisplay"
+                                readonly>
+
+                            <input
+                                type="hidden"
+                                id="resolutionComplaintId">
 
                         </div>
-
 
                         <div class="form-group">
 
@@ -691,7 +693,7 @@
                         <button
                             type="button"
                             class="secondary-btn"
-                            onclick="showResolutions()">
+                            onclick="goBackFromResolution()">
 
                             Cancel
 
