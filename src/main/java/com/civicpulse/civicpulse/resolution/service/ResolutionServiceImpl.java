@@ -10,6 +10,7 @@ import com.civicpulse.civicpulse.resolution.repository.ResolutionRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ResolutionServiceImpl
@@ -35,7 +36,7 @@ public class ResolutionServiceImpl
     public Resolution createResolution(
             CreateResolutionRequest request) {
 
-        // 1. Find complaint
+        // 1. Find the complaint
         Complaint complaint =
                 complaintRepository
                         .findById(request.getComplaintId())
@@ -46,7 +47,8 @@ public class ResolutionServiceImpl
                         );
 
 
-        // 2. Check complaint status
+        // 2. Resolution can only be created
+        //    for an IN_PROGRESS complaint
         if (complaint.getStatus()
                 != ComplaintStatus.IN_PROGRESS) {
 
@@ -57,12 +59,13 @@ public class ResolutionServiceImpl
         }
 
 
-        // 3. Prevent duplicate resolution
-        if (resolutionRepository
-                .findByComplaintId(
+        // 3. Prevent duplicate resolutions
+        List<Resolution> existingResolutions =
+                resolutionRepository.findByComplaintId(
                         request.getComplaintId()
-                )
-                .isPresent()) {
+                );
+
+        if (!existingResolutions.isEmpty()) {
 
             throw new IllegalStateException(
                     "A resolution already exists "
@@ -71,34 +74,68 @@ public class ResolutionServiceImpl
         }
 
 
-        // 4. Create resolution
+        // 4. Create the resolution
         Resolution resolution =
                 new Resolution();
+
 
         resolution.setComplaintId(
                 request.getComplaintId()
         );
 
+
         resolution.setResolvedBy(
                 request.getResolvedBy()
         );
+
 
         resolution.setResolutionDescription(
                 request.getResolutionDescription()
         );
 
+
         resolution.setEvidenceUrl(
                 request.getEvidenceUrl()
         );
 
+
+        // Resolution is completed immediately
         resolution.setStatus(
-                ResolutionStatus.INITIATED
+                ResolutionStatus.COMPLETED
         );
 
 
-        return resolutionRepository.save(
-                resolution
+        resolution.setCompletedAt(
+                LocalDateTime.now()
         );
+
+
+        // 5. Save the resolution
+        Resolution savedResolution =
+                resolutionRepository.save(
+                        resolution
+                );
+
+
+        // 6. Update the complaint
+        //    IN_PROGRESS → RESOLVED
+        complaint.setStatus(
+                ComplaintStatus.RESOLVED
+        );
+
+
+        complaint.setResolvedAt(
+                LocalDateTime.now()
+        );
+
+
+        complaintRepository.save(
+                complaint
+        );
+
+
+        // 7. Return the saved resolution
+        return savedResolution;
     }
 
 
@@ -106,13 +143,18 @@ public class ResolutionServiceImpl
     public Resolution getResolutionByComplaintId(
             Long complaintId) {
 
-        return resolutionRepository
-                .findByComplaintId(complaintId)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Resolution not found"
-                        )
-                );
+        List<Resolution> resolutions =
+                resolutionRepository
+                        .findByComplaintId(complaintId);
+
+        if (resolutions.isEmpty()) {
+
+            throw new RuntimeException(
+                    "Resolution not found"
+            );
+        }
+
+        return resolutions.getFirst();
     }
 
 
@@ -128,6 +170,16 @@ public class ResolutionServiceImpl
                                         "Resolution not found"
                                 )
                         );
+
+
+        // If createResolution() already completes
+        // the resolution, there is nothing left
+        // to complete.
+        if (resolution.getStatus()
+                == ResolutionStatus.COMPLETED) {
+
+            return resolution;
+        }
 
 
         if (resolution.getStatus()
@@ -167,7 +219,15 @@ public class ResolutionServiceImpl
         );
 
 
-        complaintRepository.save(complaint);
+        complaint.setResolvedAt(
+                LocalDateTime.now()
+        );
+
+
+        complaintRepository.save(
+                complaint
+        );
+
 
         return resolutionRepository.save(
                 resolution

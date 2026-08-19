@@ -7,6 +7,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/resolutions")
 public class ResolutionController {
@@ -33,22 +36,22 @@ public class ResolutionController {
     }
 
 
-    @GetMapping("/complaint/{complaintId}")
-    public Resolution getResolution(
-            @PathVariable Long complaintId) {
-
-        return resolutionService
-                .getResolutionByComplaintId(
-                        complaintId
-                );
-    }
-
-
     @PutMapping("/{id}/complete")
     public Resolution completeResolution(
             @PathVariable Long id) {
 
         return resolutionService
                 .completeResolution(id);
+    }
+    
+    
+    @GetMapping("/complaint/{complaintId}")
+    public Resolution getResolutionByComplaintId(
+            @PathVariable Long complaintId) {
+
+        return resolutionService
+                .getResolutionByComplaintId(
+                    complaintId
+                );
     }
 }

@@ -313,12 +313,209 @@ function renderCitizenComplaints(
                         View Details
 
                     </button>
+                    
+                    
+                    ${
+                        complaint.status === "RESOLVED" ||
+                        complaint.status === "CLOSED"
+                    
+                        ? `
+                    
+                            <button
+                                class="primary-btn"
+                                onclick="showCitizenResolution(
+                                    ${complaint.id}
+                                )">
+                    
+                                View Resolution
+                    
+                            </button>
+                    
+                          `
+                    
+                        : ""
+                    }
 
                 </div>
 
             </div>
 
         `).join("");
+}
+
+
+async function showCitizenResolution(complaintId) {
+
+    try {
+
+        const response = await fetch(
+            `${RESOLUTION_API}/complaint/${complaintId}`
+        );
+
+
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+            throw new Error(
+                errorText ||
+                "Unable to load resolution"
+            );
+        }
+
+
+        const resolution =
+            await response.json();
+
+
+        console.log(
+            "Resolution received:",
+            resolution
+        );
+
+
+        if (!resolution) {
+
+            showToast(
+                "No resolution found"
+            );
+
+            return;
+        }
+
+
+        showCitizenResolutionView(
+            resolution
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Resolution loading error:",
+            error
+        );
+
+        showToast(
+            error.message
+        );
+    }
+}
+
+
+function showCitizenResolutionView(resolution) {
+
+    hideAllViews();
+
+    const view =
+        document.getElementById(
+            "citizenResolutionView"
+        );
+
+    view.classList.remove("hidden");
+
+    document
+        .getElementById("pageTitle")
+        .textContent =
+            "Complaint Resolution";
+
+    setActiveRole("citizen");
+
+
+    const container =
+        document.getElementById(
+            "citizenResolutionContent"
+        );
+
+
+    container.innerHTML = `
+
+        <div class="resolution-detail">
+
+            <div class="resolution-status">
+                ✓ RESOLVED
+            </div>
+
+
+            <h3>
+                Resolution Details
+            </h3>
+
+
+            <div class="resolution-description">
+
+                ${escapeHtml(
+                    resolution.resolutionDescription ||
+                    "No description provided."
+                )}
+
+            </div>
+
+
+            <div class="resolution-info">
+
+                <div>
+
+                    <span>
+                        Resolved By
+                    </span>
+
+                    <strong>
+                        Officer #${resolution.resolvedBy}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Completed At
+                    </span>
+
+                    <strong>
+
+                        ${
+                            resolution.completedAt
+                            ? new Date(
+                                resolution.completedAt
+                              ).toLocaleString()
+                            : "Not available"
+                        }
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            ${
+                resolution.evidenceUrl
+
+                ? `
+
+                    <a
+                        href="${escapeHtml(
+                            resolution.evidenceUrl
+                        )}"
+                        target="_blank"
+                        class="primary-btn">
+
+                        View Evidence
+
+                    </a>
+
+                  `
+
+                : ""
+            }
+
+        </div>
+
+    `;
 }
 
 
