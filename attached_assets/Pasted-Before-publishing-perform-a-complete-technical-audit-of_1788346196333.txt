@@ -1,0 +1,152 @@
+Before publishing, perform a complete technical audit of the Smart Governance Platform.
+
+Do NOT redesign the application or replace the current working implementation.
+
+First inspect the entire project and verify that the application actually satisfies my original specification.
+
+IMPORTANT:
+I need a REAL working full-stack application, not a frontend mockup.
+
+Verify all of the following:
+
+1. Frontend
+- React application works
+- All routes work
+- No broken links
+- No dead buttons
+- No blank pages
+- No console errors
+- Responsive layout
+- Public Home, About and Contact pages work
+
+2. Authentication
+- Citizen signup works
+- Citizen login works
+- Staff signup works
+- Staff login works
+- Admin login works
+- Logout works
+- Invalid credentials are rejected
+- Duplicate email registration is rejected
+- Passwords are securely hashed
+- Authentication state is maintained correctly
+
+3. Role-based authorization
+- Citizen can access only citizen features
+- Staff can access only staff features
+- Admin can access admin features
+- Users cannot access another role's dashboard by manually entering URLs
+- Backend/API authorization must also enforce roles
+
+4. Complaint lifecycle
+Test this complete flow:
+
+Citizen creates complaint
+→ complaint is saved
+→ complaint receives an ID
+→ complaint status starts as PENDING
+→ staff can view/receive the complaint
+→ staff can update status
+→ staff can add remarks/resolution
+→ citizen can see the updated status
+→ admin can see the complaint
+
+5. Database
+Verify that actual persistent database storage is being used.
+
+Verify:
+- Users
+- Departments
+- Complaints
+- Notifications
+
+are persisted and retrieved correctly.
+
+Do not use hardcoded dashboard statistics as the final data source.
+
+6. API
+Verify all frontend API requests.
+Check:
+- authentication APIs
+- user APIs
+- department APIs
+- complaint APIs
+- notification APIs
+- dashboard statistics APIs
+
+7. Security
+Verify:
+- password hashing
+- authentication
+- authorization
+- protected APIs
+- protected frontend routes
+- CORS
+- secrets are not hardcoded
+
+8. Error handling
+Test:
+- invalid login
+- invalid signup
+- duplicate email
+- missing required fields
+- unauthorized access
+- nonexistent complaint
+- API/server failure
+
+The UI should show useful error messages instead of blank pages.
+
+9. UI/UX
+Do NOT change the current overall design unless something is broken.
+
+Maintain the professional government-service visual language:
+- warm/off-white background
+- charcoal text
+- muted burgundy/plum accent
+- restrained status colors
+- clean typography
+- subtle borders
+- minimal shadows
+- no neon
+- no excessive gradients
+- no generic AI dashboard appearance
+
+10. Architecture
+Inspect whether the current implementation follows my requested architecture:
+
+React
+→ REST API
+→ Spring Boot
+→ Service
+→ Repository
+→ JPA/Hibernate
+→ MySQL
+
+If any part of the implementation does NOT match this architecture, tell me exactly what is currently being used before changing it.
+
+Do NOT silently replace Spring Boot/MySQL with another backend/database.
+
+11. Fix everything you find.
+
+For every issue:
+- identify the cause
+- fix it
+- run the application again
+- retest the affected functionality
+
+Do not stop after identifying problems.
+
+12. After testing, give me a concise final report:
+
+A. What is working
+B. What you fixed
+C. Any remaining problems
+D. Current technology stack
+E. Database being used
+F. How authentication works
+G. Demo credentials
+H. Whether the project is safe to publish
+
+Do NOT publish yet.
+
+Only prepare the project for publishing after the complete audit passes.

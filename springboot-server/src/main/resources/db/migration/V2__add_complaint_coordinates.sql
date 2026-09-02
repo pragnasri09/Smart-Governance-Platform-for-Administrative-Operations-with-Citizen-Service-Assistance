@@ -1,0 +1,3 @@
+ALTER TABLE complaints
+  ADD COLUMN latitude DOUBLE NULL,
+  ADD COLUMN longitude DOUBLE NULL;

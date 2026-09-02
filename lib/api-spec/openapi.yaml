@@ -1,0 +1,599 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: "CivicPulse: Smart Governance Platform for Administrative Operations with Citizen Service Assistance"
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: auth
+  - name: dashboard
+  - name: users
+  - name: departments
+  - name: complaints
+  - name: notifications
+  - name: contact
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a citizen or staff member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Authenticate a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      security: [{ bearerAuth: [] }]
+      summary: Return the current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /dashboard/citizen:
+    get:
+      operationId: getCitizenDashboard
+      tags: [dashboard]
+      security: [{ bearerAuth: [] }]
+      summary: Citizen dashboard summary
+      responses:
+        "200":
+          description: Citizen summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CitizenDashboard"
+  /dashboard/staff:
+    get:
+      operationId: getStaffDashboard
+      tags: [dashboard]
+      security: [{ bearerAuth: [] }]
+      summary: Staff dashboard summary
+      responses:
+        "200":
+          description: Staff summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffDashboard"
+  /dashboard/admin:
+    get:
+      operationId: getAdminDashboard
+      tags: [dashboard]
+      security: [{ bearerAuth: [] }]
+      summary: Admin dashboard summary
+      responses:
+        "200":
+          description: Admin summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminDashboard"
+  /users/profile:
+    get:
+      operationId: getProfile
+      tags: [users]
+      security: [{ bearerAuth: [] }]
+      summary: Get the current profile
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      security: [{ bearerAuth: [] }]
+      summary: List users for administration
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - name: role
+          in: query
+          schema:
+            $ref: "#/components/schemas/Role"
+      responses:
+        "200":
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+  /departments:
+    get:
+      operationId: listDepartments
+      tags: [departments]
+      summary: List active departments
+      responses:
+        "200":
+          description: Departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Department"
+    post:
+      operationId: createDepartment
+      tags: [departments]
+      security: [{ bearerAuth: [] }]
+      summary: Create a department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepartmentInput"
+      responses:
+        "201":
+          description: Department
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+  /departments/{id}:
+    put:
+      operationId: updateDepartment
+      tags: [departments]
+      security: [{ bearerAuth: [] }]
+      summary: Update a department
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DepartmentInput"
+      responses:
+        "200":
+          description: Updated department
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+    delete:
+      operationId: deleteDepartment
+      tags: [departments]
+      security: [{ bearerAuth: [] }]
+      summary: Deactivate a department
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Department deactivated
+  /complaints:
+    get:
+      operationId: listComplaints
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: List all complaints for staff or admins
+      parameters:
+        - $ref: "#/components/parameters/Search"
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ComplaintStatus"
+        - name: departmentId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Complaints
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Complaint"
+    post:
+      operationId: createComplaint
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: Submit a complaint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintInput"
+      responses:
+        "201":
+          description: Complaint created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+  /complaints/my:
+    get:
+      operationId: listMyComplaints
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: List complaints submitted by the current citizen
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ComplaintStatus"
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: My complaints
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Complaint"
+  /complaints/assigned:
+    get:
+      operationId: listAssignedComplaints
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: List complaints assigned to current staff member
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/ComplaintStatus"
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Assigned complaints
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Complaint"
+  /complaints/{id}:
+    get:
+      operationId: getComplaint
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: Get a complaint detail
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Complaint detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+    put:
+      operationId: updateComplaintStatus
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: Update complaint status and resolution fields
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComplaintUpdate"
+      responses:
+        "200":
+          description: Updated complaint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      security: [{ bearerAuth: [] }]
+      summary: List current user notifications
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+  /contact:
+    post:
+      operationId: submitContact
+      tags: [contact]
+      summary: Submit a public contact message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Contact message received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    Search:
+      name: search
+      in: query
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status: { type: string }
+      required: [status]
+    Role:
+      type: string
+      enum: [CITIZEN, STAFF, ADMIN]
+    ComplaintStatus:
+      type: string
+      enum: [PENDING, ASSIGNED, IN_PROGRESS, RESOLVED, REJECTED]
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        role:
+          $ref: "#/components/schemas/Role"
+        departmentId: { type: ["integer", "null"] }
+        departmentName: { type: ["string", "null"] }
+        createdAt: { type: string }
+      required: [id, name, email, role, departmentId, departmentName, createdAt]
+    Department:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        active: { type: boolean }
+        createdAt: { type: string }
+      required: [id, name, description, active, createdAt]
+    Complaint:
+      type: object
+      properties:
+        id: { type: integer }
+        reference: { type: string }
+        title: { type: string }
+        category: { type: string }
+        description: { type: string }
+        location: { type: string }
+        latitude: { type: ["number", "null"], format: double }
+        longitude: { type: ["number", "null"], format: double }
+        status:
+          $ref: "#/components/schemas/ComplaintStatus"
+        citizenId: { type: integer }
+        citizenName: { type: string }
+        departmentId: { type: integer }
+        departmentName: { type: string }
+        assignedStaffId: { type: ["integer", "null"] }
+        assignedStaffName: { type: ["string", "null"] }
+        remarks: { type: ["string", "null"] }
+        resolution: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+      required: [id, reference, title, category, description, location, latitude, longitude, status, citizenId, citizenName, departmentId, departmentName, assignedStaffId, assignedStaffName, remarks, resolution, createdAt, updatedAt]
+    Notification:
+      type: object
+      properties:
+        id: { type: integer }
+        message: { type: string }
+        complaintId: { type: ["integer", "null"] }
+        complaintReference: { type: ["string", "null"] }
+        read: { type: boolean }
+        createdAt: { type: string }
+      required: [id, message, complaintId, complaintReference, read, createdAt]
+    RegisterInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        role:
+          type: string
+          enum: [CITIZEN, STAFF]
+        departmentId: { type: ["integer", "null"] }
+      required: [name, email, password, role]
+    LoginInput:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 1 }
+      required: [email, password]
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string }
+        user:
+          $ref: "#/components/schemas/User"
+      required: [token, user]
+    ComplaintInput:
+      type: object
+      properties:
+        title: { type: string, minLength: 3 }
+        category: { type: string, minLength: 2 }
+        departmentId: { type: integer }
+        description: { type: string, minLength: 10 }
+        location: { type: string, minLength: 2 }
+        latitude: { type: number, format: double, minimum: -90, maximum: 90 }
+        longitude: { type: number, format: double, minimum: -180, maximum: 180 }
+      required: [title, category, departmentId, description, location, latitude, longitude]
+    ComplaintUpdate:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/ComplaintStatus"
+        remarks: { type: ["string", "null"] }
+        resolution: { type: ["string", "null"] }
+        assignedStaffId: { type: ["integer", "null"] }
+      required: [status]
+    DepartmentInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        description: { type: string, minLength: 5 }
+      required: [name, description]
+    ContactInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+        subject: { type: string, minLength: 3 }
+        message: { type: string, minLength: 10 }
+      required: [name, email, subject, message]
+    CitizenDashboard:
+      type: object
+      properties:
+        total: { type: integer }
+        pending: { type: integer }
+        inProgress: { type: integer }
+        resolved: { type: integer }
+        recent:
+          type: array
+          items:
+            $ref: "#/components/schemas/Complaint"
+      required: [total, pending, inProgress, resolved, recent]
+    StaffDashboard:
+      type: object
+      properties:
+        assigned: { type: integer }
+        inProgress: { type: integer }
+        resolved: { type: integer }
+        overdue: { type: integer }
+        recent:
+          type: array
+          items:
+            $ref: "#/components/schemas/Complaint"
+      required: [assigned, inProgress, resolved, overdue, recent]
+    AdminDashboard:
+      type: object
+      properties:
+        totalUsers: { type: integer }
+        totalComplaints: { type: integer }
+        resolvedComplaints: { type: integer }
+        departments: { type: integer }
+        statusBreakdown:
+          type: object
+          additionalProperties:
+            type: integer
+        departmentBreakdown:
+          type: array
+          items:
+            type: object
+            properties:
+              department: { type: string }
+              count: { type: integer }
+            required: [department, count]
+        recent:
+          type: array
+          items:
+            $ref: "#/components/schemas/Complaint"
+      required: [totalUsers, totalComplaints, resolvedComplaints, departments, statusBreakdown, departmentBreakdown, recent]
+    ContactMessage:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        subject: { type: string }
+        message: { type: string }
+        createdAt: { type: string }
+      required: [id, name, email, subject, message, createdAt]
+    MessageResponse:
+      type: object
+      properties:
+        message: { type: string }
+      required: [message]
+    ErrorResponse:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]

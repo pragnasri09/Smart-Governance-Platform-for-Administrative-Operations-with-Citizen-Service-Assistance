@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Smart Governance Platform"
+description = "A full-stack civic service platform connecting citizens with government departments for transparent complaint submission, tracking, resolution, and administrative oversight."
+version = "1.0.0"
+id = "artifacts/smart-governance-platform"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19676
+
+[services.development]
+run = "pnpm --filter @workspace/smart-governance-platform run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/smart-governance-platform", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/smart-governance-platform/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19676"
+BASE_PATH = "/"
