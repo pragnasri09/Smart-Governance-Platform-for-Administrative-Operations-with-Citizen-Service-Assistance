@@ -21,7 +21,7 @@ The API seeds demo data on startup. These accounts are for preview and developme
 | Role | Email | Password |
 | --- | --- | --- |
 | Administrator | `admin1@teamb.com` | `12345678` |
-| Citizen | `ananya.rao@gmail.com` | `DemoPass123!` |
+| Citizen | `citizen1@teamb.com` | `12345678!` |
 | Service staff | `road1@teamb.com` | `12345678` |
 
 ## Run locally on Windows
