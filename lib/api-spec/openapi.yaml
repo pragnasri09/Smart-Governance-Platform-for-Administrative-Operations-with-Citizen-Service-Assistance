@@ -136,6 +136,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/User"
+    put:
+      operationId: updateProfile
+      tags: [users]
+      security: [{ bearerAuth: [] }]
+      summary: Update the current user's name and email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdateInput"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
   /users:
     get:
       operationId: listUsers
@@ -340,6 +358,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Complaint"
+    delete:
+      operationId: deleteComplaint
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: Delete a complaint as an administrator
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Complaint deleted
   /notifications:
     get:
       operationId: listNotifications
@@ -504,6 +532,12 @@ components:
           enum: [CITIZEN, STAFF]
         departmentId: { type: ["integer", "null"] }
       required: [name, email, password, role]
+    ProfileUpdateInput:
+      type: object
+      properties:
+        name: { type: string, minLength: 2 }
+        email: { type: string, format: email }
+      required: [name, email]
     LoginInput:
       type: object
       properties:

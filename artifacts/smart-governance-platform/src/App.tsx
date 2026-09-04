@@ -9,6 +9,7 @@ import {
   CircleMarker,
   MapContainer,
   TileLayer,
+  useMap,
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -82,6 +83,8 @@ import {
   useRegister,
   useSubmitContact,
   useUpdateComplaintStatus,
+  useDeleteComplaint,
+  useUpdateProfile,
   useUpdateDepartment,
   setAuthTokenGetter,
   setBaseUrl,
@@ -1693,6 +1696,56 @@ function LocationPicker({
     />
   ) : null;
 }
+function MapControls({
+  onLocation,
+}: {
+  onLocation: (coordinates: [number, number]) => void;
+}) {
+  const map = useMap();
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const locate = () => {
+    if (!navigator.geolocation) {
+      setLocationError("GPS location is not supported by this browser.");
+      return;
+    }
+    setLocating(true);
+    setLocationError("");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const coordinates: [number, number] = [
+          coords.latitude,
+          coords.longitude,
+        ];
+        map.setView(coordinates, 16);
+        onLocation(coordinates);
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+        setLocationError(
+          "Unable to fetch your GPS location. Allow location access and try again.",
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+  };
+  return (
+    <div className="map-controls">
+      <button
+        type="button"
+        className="map-locate-button"
+        onClick={locate}
+        disabled={locating}
+      >
+        {locating ? "Fetching GPS location..." : "Use my GPS location"}
+      </button>
+      {locationError && (
+        <small className="map-location-error">{locationError}</small>
+      )}
+    </div>
+  );
+}
 function ComplaintList({
   audience,
 }: {
@@ -1815,6 +1868,7 @@ function NewComplaint() {
     photoData: null as string | null,
   });
   const [error, setError] = useState("");
+  const [satellite, setSatellite] = useState(false);
   const update =
     (key: keyof typeof form) =>
     (
@@ -1938,14 +1992,34 @@ function NewComplaint() {
               </label>
               <div>
                 <label>Select the issue point on the map</label>
+                <button
+                  type="button"
+                  className="map-mode-button"
+                  onClick={() => setSatellite((value) => !value)}
+                >
+                  {satellite ? "Use standard map" : "Use satellite map"}
+                </button>
                 <MapContainer
                   center={[20.5937, 78.9629]}
                   zoom={5}
                   className="complaint-map"
                 >
                   <TileLayer
-                    attribution="&copy; OpenStreetMap contributors"
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution={
+                      satellite
+                        ? "&copy; Esri"
+                        : "&copy; OpenStreetMap contributors"
+                    }
+                    url={
+                      satellite
+                        ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                        : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    }
+                  />
+                  <MapControls
+                    onLocation={([latitude, longitude]) =>
+                      setForm({ ...form, latitude, longitude })
+                    }
                   />
                   <LocationPicker
                     value={selectedCoordinates}
@@ -2035,14 +2109,25 @@ function ComplaintDetail({
   audience: "citizen" | "staff" | "admin";
 }) {
   const { id } = useParams<{ id: string }>();
+  const [, navigate] = useLocation();
   const query = useGetComplaint(Number(id), {
     query: { queryKey: ["complaint", Number(id)], enabled: Boolean(id) },
   });
   const update = useUpdateComplaintStatus();
+  const remove = useDeleteComplaint();
   const [status, setStatus] = useState("");
   const [remarks, setRemarks] = useState("");
   const [resolution, setResolution] = useState("");
   const complaint = query.data;
+  const deleteComplaint = () => {
+    if (!window.confirm("Delete this complaint permanently?")) return;
+    remove.mutate(
+      { id: complaint!.id },
+      {
+        onSuccess: () => navigate("/admin/complaints"),
+      },
+    );
+  };
   if (query.isLoading) return <LoadingState label="Loading complaint" />;
   if (query.isError || !complaint)
     return <ErrorState onRetry={() => query.refetch()} />;
@@ -2280,6 +2365,16 @@ function ComplaintDetail({
                   </>
                 )}
               </Button>
+              {audience === "admin" && (
+                <Button
+                  variant="quiet"
+                  onClick={deleteComplaint}
+                  disabled={remove.isPending}
+                  className="full-button"
+                >
+                  {remove.isPending ? "Deleting…" : "Delete complaint"}
+                </Button>
+              )}
             </div>
           )}
         </aside>
@@ -2343,10 +2438,29 @@ function Notifications({ role }: { role: "citizen" | "staff" | "admin" }) {
 }
 function Profile() {
   const query = useGetProfile();
+  const update = useUpdateProfile();
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "" });
   if (query.isLoading) return <LoadingState label="Loading your profile" />;
   if (query.isError || !query.data)
     return <ErrorState onRetry={() => query.refetch()} />;
   const user = query.data;
+  const startEditing = () => {
+    setForm({ name: user.name, email: user.email });
+    setEditing(true);
+  };
+  const save = (event: FormEvent) => {
+    event.preventDefault();
+    update.mutate(
+      { data: form },
+      {
+        onSuccess: () => {
+          setEditing(false);
+          query.refetch();
+        },
+      },
+    );
+  };
   return (
     <>
       <PageHeader
@@ -2359,20 +2473,61 @@ function Profile() {
           <div className="profile-avatar">{user.name.slice(0, 1)}</div>
           <h2 data-testid="text-profile-name">{user.name}</h2>
           <span className="profile-role">{statusLabel(user.role)}</span>
-          <div className="profile-details">
-            <div>
-              <span>Email address</span>
-              <strong data-testid="text-profile-email">{user.email}</strong>
-            </div>
-            <div>
-              <span>Department</span>
-              <strong>{user.departmentName || "Not assigned"}</strong>
-            </div>
-            <div>
-              <span>Member since</span>
-              <strong>{dateLabel(user.createdAt)}</strong>
-            </div>
-          </div>
+          {editing ? (
+            <form onSubmit={save} className="profile-details">
+              <label>
+                Name
+                <input
+                  value={form.name}
+                  onChange={(event) =>
+                    setForm({ ...form, name: event.target.value })
+                  }
+                />
+              </label>
+              <label>
+                Email address
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(event) =>
+                    setForm({ ...form, email: event.target.value })
+                  }
+                />
+              </label>
+              <div className="form-actions">
+                <Button
+                  type="button"
+                  variant="quiet"
+                  onClick={() => setEditing(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={update.isPending}>
+                  {update.isPending ? "Saving…" : "Save changes"}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <div className="profile-details">
+                <div>
+                  <span>Email address</span>
+                  <strong data-testid="text-profile-email">{user.email}</strong>
+                </div>
+                <div>
+                  <span>Department</span>
+                  <strong>{user.departmentName || "Not assigned"}</strong>
+                </div>
+                <div>
+                  <span>Member since</span>
+                  <strong>{dateLabel(user.createdAt)}</strong>
+                </div>
+              </div>
+              <Button variant="secondary" onClick={startEditing}>
+                Edit profile
+              </Button>
+            </>
+          )}
         </section>
         <aside className="surface privacy-card">
           <ShieldCheck size={20} />

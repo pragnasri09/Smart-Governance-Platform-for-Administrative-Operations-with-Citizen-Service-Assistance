@@ -9,23 +9,24 @@ export interface HealthStatus {
   status: string;
 }
 
-export type Role = (typeof Role)[keyof typeof Role];
+export type Role = typeof Role[keyof typeof Role];
+
 
 export const Role = {
-  CITIZEN: "CITIZEN",
-  STAFF: "STAFF",
-  ADMIN: "ADMIN",
+  CITIZEN: 'CITIZEN',
+  STAFF: 'STAFF',
+  ADMIN: 'ADMIN',
 } as const;
 
-export type ComplaintStatus =
-  (typeof ComplaintStatus)[keyof typeof ComplaintStatus];
+export type ComplaintStatus = typeof ComplaintStatus[keyof typeof ComplaintStatus];
+
 
 export const ComplaintStatus = {
-  PENDING: "PENDING",
-  ASSIGNED: "ASSIGNED",
-  IN_PROGRESS: "IN_PROGRESS",
-  RESOLVED: "RESOLVED",
-  REJECTED: "REJECTED",
+  PENDING: 'PENDING',
+  ASSIGNED: 'ASSIGNED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  REJECTED: 'REJECTED',
 } as const;
 
 export interface User {
@@ -60,7 +61,7 @@ export interface Complaint {
   /** @nullable */
   longitude: number | null;
   /** @nullable */
-  photoData: string | null;
+  photoData?: string | null;
   status: ComplaintStatus;
   citizenId: number;
   citizenName: string;
@@ -89,12 +90,12 @@ export interface Notification {
   createdAt: string;
 }
 
-export type RegisterInputRole =
-  (typeof RegisterInputRole)[keyof typeof RegisterInputRole];
+export type RegisterInputRole = typeof RegisterInputRole[keyof typeof RegisterInputRole];
+
 
 export const RegisterInputRole = {
-  CITIZEN: "CITIZEN",
-  STAFF: "STAFF",
+  CITIZEN: 'CITIZEN',
+  STAFF: 'STAFF',
 } as const;
 
 export interface RegisterInput {
@@ -106,6 +107,12 @@ export interface RegisterInput {
   role: RegisterInputRole;
   /** @nullable */
   departmentId?: number | null;
+}
+
+export interface ProfileUpdateInput {
+  /** @minLength 2 */
+  name: string;
+  email: string;
 }
 
 export interface LoginInput {
@@ -130,16 +137,19 @@ export interface ComplaintInput {
   /** @minLength 2 */
   location: string;
   /**
-   * @minimum -90
-   * @maximum 90
-   */
+     * @minimum -90
+     * @maximum 90
+     */
   latitude: number;
   /**
-   * @minimum -180
-   * @maximum 180
-   */
+     * @minimum -180
+     * @maximum 180
+     */
   longitude: number;
-  /** @nullable */
+  /**
+     * @maxLength 7000000
+     * @nullable
+     */
   photoData?: string | null;
 }
 
@@ -186,7 +196,7 @@ export interface StaffDashboard {
   recent: Complaint[];
 }
 
-export type AdminDashboardStatusBreakdown = { [key: string]: number };
+export type AdminDashboardStatusBreakdown = {[key: string]: number};
 
 export type AdminDashboardDepartmentBreakdownItem = {
   department: string;
@@ -233,22 +243,23 @@ export type UnauthorizedResponse = ErrorResponse;
 export type SearchParameter = string;
 
 export type ListUsersParams = {
-  search?: SearchParameter;
-  role?: Role;
+search?: SearchParameter;
+role?: Role;
 };
 
 export type ListComplaintsParams = {
-  search?: SearchParameter;
-  status?: ComplaintStatus;
-  departmentId?: number;
+search?: SearchParameter;
+status?: ComplaintStatus;
+departmentId?: number;
 };
 
 export type ListMyComplaintsParams = {
-  status?: ComplaintStatus;
-  search?: SearchParameter;
+status?: ComplaintStatus;
+search?: SearchParameter;
 };
 
 export type ListAssignedComplaintsParams = {
-  status?: ComplaintStatus;
-  search?: SearchParameter;
+status?: ComplaintStatus;
+search?: SearchParameter;
 };
+

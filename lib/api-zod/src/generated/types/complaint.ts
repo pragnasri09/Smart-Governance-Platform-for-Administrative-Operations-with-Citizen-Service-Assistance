@@ -19,7 +19,7 @@ export interface Complaint {
   /** @nullable */
   longitude: number | null;
   /** @nullable */
-  photoData: string | null;
+  photoData?: string | null;
   status: ComplaintStatus;
   citizenId: number;
   citizenName: string;

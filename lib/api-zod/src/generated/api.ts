@@ -103,6 +103,7 @@ export const GetCitizenDashboardResponse = zod.object({
   "location": zod.string(),
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
   "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
@@ -135,6 +136,7 @@ export const GetStaffDashboardResponse = zod.object({
   "location": zod.string(),
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
   "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
@@ -172,6 +174,7 @@ export const GetAdminDashboardResponse = zod.object({
   "location": zod.string(),
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
   "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
@@ -191,6 +194,29 @@ export const GetAdminDashboardResponse = zod.object({
  * @summary Get the current profile
  */
 export const GetProfileResponse = zod.object({
+  "id": zod.int(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "role": zod.enum(['CITIZEN', 'STAFF', 'ADMIN']),
+  "departmentId": zod.int().nullable(),
+  "departmentName": zod.string().nullable(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Update the current user's name and email
+ */
+export const updateProfileBodyNameMin = 2;
+
+
+
+export const UpdateProfileBody = zod.object({
+  "name": zod.string().min(updateProfileBodyNameMin),
+  "email": zod.email()
+})
+
+export const UpdateProfileResponse = zod.object({
   "id": zod.int(),
   "name": zod.string(),
   "email": zod.string(),
@@ -312,6 +338,7 @@ export const ListComplaintsResponseItem = zod.object({
   "location": zod.string(),
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
   "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
@@ -344,6 +371,8 @@ export const createComplaintBodyLatitudeMax = 90;
 export const createComplaintBodyLongitudeMin = -180;
 export const createComplaintBodyLongitudeMax = 180;
 
+export const createComplaintBodyPhotoDataMax = 7000000;
+
 
 
 export const CreateComplaintBody = zod.object({
@@ -353,7 +382,8 @@ export const CreateComplaintBody = zod.object({
   "description": zod.string().min(createComplaintBodyDescriptionMin),
   "location": zod.string().min(createComplaintBodyLocationMin),
   "latitude": zod.number().min(createComplaintBodyLatitudeMin).max(createComplaintBodyLatitudeMax),
-  "longitude": zod.number().min(createComplaintBodyLongitudeMin).max(createComplaintBodyLongitudeMax)
+  "longitude": zod.number().min(createComplaintBodyLongitudeMin).max(createComplaintBodyLongitudeMax),
+  "photoData": zod.string().max(createComplaintBodyPhotoDataMax).nullish()
 })
 
 export const CreateComplaintResponse = zod.object({
@@ -365,6 +395,7 @@ export const CreateComplaintResponse = zod.object({
   "location": zod.string(),
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
   "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
@@ -396,6 +427,7 @@ export const ListMyComplaintsResponseItem = zod.object({
   "location": zod.string(),
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
   "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
@@ -428,6 +460,7 @@ export const ListAssignedComplaintsResponseItem = zod.object({
   "location": zod.string(),
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
   "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
@@ -459,6 +492,7 @@ export const GetComplaintResponse = zod.object({
   "location": zod.string(),
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
   "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
@@ -496,6 +530,7 @@ export const UpdateComplaintStatusResponse = zod.object({
   "location": zod.string(),
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
   "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
@@ -508,6 +543,16 @@ export const UpdateComplaintStatusResponse = zod.object({
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
+
+
+/**
+ * @summary Delete a complaint as an administrator
+ */
+export const DeleteComplaintParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const DeleteComplaintResponse = zod.void()
 
 
 /**

@@ -8,6 +8,7 @@ public class GovernanceController {
  @PostMapping("/auth/login") public AuthResponse login(@Valid @RequestBody LoginRequest x){return service.login(x);}
  @GetMapping("/auth/me") public UserDto me(Authentication a){return service.currentDto(a);}
  @GetMapping("/users/profile") public UserDto profile(Authentication a){return service.currentDto(a);}
+ @PutMapping("/users/profile") public UserDto updateProfile(Authentication a,@Valid @RequestBody ProfileUpdateRequest x){return service.updateProfile(a,x);}
  @GetMapping("/users") @PreAuthorize("hasRole('ADMIN')") public List<UserDto> users(@RequestParam(required=false)String search,@RequestParam(required=false)Role role){return service.listUsers(search,role);}
  @GetMapping("/departments") public List<DepartmentDto> departments(){return service.listDepartments();}
  @PostMapping("/departments") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<DepartmentDto> createDepartment(@Valid @RequestBody DepartmentRequest x){return ResponseEntity.status(201).body(service.createDepartment(x));}
@@ -17,6 +18,7 @@ public class GovernanceController {
  @GetMapping("/complaints/my") @PreAuthorize("hasRole('CITIZEN')") public List<ComplaintDto> my(Authentication a,@RequestParam(required=false)String search,@RequestParam(required=false)ComplaintStatus status){return service.myComplaints(a,search,status);}
  @GetMapping("/complaints/assigned") @PreAuthorize("hasRole('STAFF')") public List<ComplaintDto> assigned(Authentication a,@RequestParam(required=false)String search,@RequestParam(required=false)ComplaintStatus status){return service.assigned(a,search,status);}
  @GetMapping("/complaints") @PreAuthorize("hasRole('ADMIN')") public List<ComplaintDto> complaints(@RequestParam(required=false)String search,@RequestParam(required=false)ComplaintStatus status,@RequestParam(required=false)Long departmentId){return service.allComplaints(search,status,departmentId);}
+ @DeleteMapping("/complaints/{id}") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<Void> deleteComplaint(@PathVariable long id){service.deleteComplaint(id);return ResponseEntity.noContent().build();}
  @GetMapping("/complaints/{id}") public ComplaintDto complaint(Authentication a,@PathVariable long id){return service.getComplaint(a,id);}
  @PutMapping("/complaints/{id}") @PreAuthorize("hasAnyRole('STAFF','ADMIN')") public ComplaintDto updateComplaint(Authentication a,@PathVariable long id,@Valid @RequestBody ComplaintUpdate x){return service.updateComplaint(a,id,x);}
  @GetMapping("/notifications") public List<NotificationDto> notifications(Authentication a){return service.notifications(a);}

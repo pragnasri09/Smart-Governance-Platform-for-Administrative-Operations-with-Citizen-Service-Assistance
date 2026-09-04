@@ -38,6 +38,7 @@ import type {
   LoginInput,
   MessageResponse,
   Notification,
+  ProfileUpdateInput,
   RegisterInput,
   StaffDashboard,
   UnauthorizedResponse,
@@ -674,6 +675,77 @@ export function useGetProfile<TData = Awaited<ReturnType<typeof getProfile>>, TE
 
 
 
+
+export const getUpdateProfileUrl = () => {
+
+
+
+
+  return `/api/users/profile`
+}
+
+/**
+ * @summary Update the current user's name and email
+ */
+export const updateProfile = async (profileUpdateInput: ProfileUpdateInput, options?: Parameters<typeof customFetch>[1]): Promise<User> => {
+
+  return customFetch<User>(getUpdateProfileUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(profileUpdateInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateProfileMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProfile>>, TError,{data: BodyType<ProfileUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateProfile>>, TError,{data: BodyType<ProfileUpdateInput>}, TContext> => {
+
+const mutationKey = ['updateProfile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateProfile>>, {data: BodyType<ProfileUpdateInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateProfile(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateProfileMutationResult = NonNullable<Awaited<ReturnType<typeof updateProfile>>>
+    export type UpdateProfileMutationBody = BodyType<ProfileUpdateInput>
+    export type UpdateProfileMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update the current user's name and email
+ */
+export const useUpdateProfile = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProfile>>, TError,{data: BodyType<ProfileUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateProfile>>,
+        TError,
+        {data: BodyType<ProfileUpdateInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateProfileMutationOptions(options));
+    }
 
 export const getListUsersUrl = (params?: ListUsersParams,) => {
   const normalizedParams = new URLSearchParams();
@@ -1520,6 +1592,77 @@ export const useUpdateComplaintStatus = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateComplaintStatusMutationOptions(options));
+    }
+
+export const getDeleteComplaintUrl = (id: number,) => {
+
+
+
+
+  return `/api/complaints/${id}`
+}
+
+/**
+ * @summary Delete a complaint as an administrator
+ */
+export const deleteComplaint = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteComplaintUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteComplaintMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteComplaint>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteComplaint>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteComplaint'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteComplaint>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteComplaint(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteComplaintMutationResult = NonNullable<Awaited<ReturnType<typeof deleteComplaint>>>
+
+    export type DeleteComplaintMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a complaint as an administrator
+ */
+export const useDeleteComplaint = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteComplaint>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteComplaint>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteComplaintMutationOptions(options));
     }
 
 export const getListNotificationsUrl = () => {

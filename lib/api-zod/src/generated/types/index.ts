@@ -29,6 +29,7 @@ export * from './listUsersParams';
 export * from './loginInput';
 export * from './messageResponse';
 export * from './notification';
+export * from './profileUpdateInput';
 export * from './registerInput';
 export * from './registerInputRole';
 export * from './role';

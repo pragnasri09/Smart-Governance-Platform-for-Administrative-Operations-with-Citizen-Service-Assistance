@@ -10,8 +10,10 @@ CivicPulse is a complete civic-service workflow for reporting issues, processing
 - Citizen complaint submission, history, detail timeline, and notifications
 - Optional incident photo upload (maximum 5 MB) visible in complaint details
 - Complaint coordinates displayed on the map for citizens, service staff, and administrators
+- Staff receive an in-app notification whenever a complaint is assigned to them
 - Staff assigned-work queue with status, remarks, and resolution updates
-- Administrator dashboards, user/staff directories, department CRUD, complaint oversight, reports, and notifications
+- Administrator dashboards, user/staff directories, department CRUD, complaint oversight, reports, notifications, and direct complaint deletion
+- Profile editing for every role (name and email only; role and department remain protected)
 - MySQL persistence through Spring Data JPA and Flyway migrations
 - OpenAPI-first contract with generated React Query hooks and Zod validators
 - Responsive desktop/mobile interface with loading, error, empty, and validation states
@@ -154,6 +156,12 @@ complaint detail page for every role. Citizens may optionally attach one image
 from the complaint form. Images are converted to a data URL and stored in the
 complaint record, with a 5 MB limit. The Flyway migration
 `V3__add_complaint_photo.sql` creates the required column.
+
+The complaint map supports standard OpenStreetMap tiles and satellite imagery.
+The `Use my exact location` control requests browser location permission and
+places the marker at the detected coordinates; the user can move the marker
+before submitting. Browser geolocation requires HTTPS (or localhost) and user
+permission.
 
 Useful checks:
 
