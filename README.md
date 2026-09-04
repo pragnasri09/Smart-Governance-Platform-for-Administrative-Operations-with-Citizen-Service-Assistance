@@ -102,6 +102,33 @@ only when using different deployment values.
 - Do not share real citizen data or production database exports in GitHub.
 - GitHub collaborators should use separate accounts and SSH keys/personal access tokens; never share your GitHub password or token.
 
+### Railway frontend deployment
+
+The frontend is part of a pnpm workspace and uses pnpm `catalog:` dependency
+versions. Do not use Railway's default `npm install` command.
+
+Configure the frontend service with the repository root as its root directory
+(leave the root directory field blank), then use:
+
+```text
+Build command:
+corepack enable && pnpm install --frozen-lockfile && pnpm --filter @workspace/smart-governance-platform run build
+
+Start command:
+pnpm --filter @workspace/smart-governance-platform run serve
+```
+
+Set these frontend variables:
+
+```text
+PORT=5173
+BASE_PATH=/
+API_URL=https://<your-spring-boot-service>.up.railway.app
+```
+
+Set the service's output directory to
+`artifacts/smart-governance-platform/dist/public` if Railway asks for one.
+
 Useful checks:
 
 ```bash
