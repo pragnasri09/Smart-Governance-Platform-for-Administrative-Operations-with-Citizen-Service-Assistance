@@ -2,6 +2,9 @@
 
 CivicPulse is a complete civic-service workflow for reporting issues, processing department work queues, and monitoring service performance. The supported runtime is a React/Vite frontend with a Java Spring Boot API and MySQL database.
 
+## Live Demo
+The platform is publicly hosted at https://civicpulse-teamb.up.railway.app/
+
 ## What is included
 
 - Public service landing page, About page, and validated Contact form
