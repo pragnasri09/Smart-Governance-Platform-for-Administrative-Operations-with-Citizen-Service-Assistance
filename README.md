@@ -123,7 +123,7 @@ Set these frontend variables:
 ```text
 PORT=5173
 BASE_PATH=/
-API_URL=https://<your-spring-boot-service>.up.railway.app
+VITE_API_URL=https://<your-spring-boot-service>.up.railway.app
 ```
 
 Set the service's output directory to

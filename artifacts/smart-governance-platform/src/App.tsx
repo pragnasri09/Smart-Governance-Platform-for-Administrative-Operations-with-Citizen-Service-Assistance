@@ -18,7 +18,7 @@ import {
   useGetStaffDashboard, useHealthCheck, useListAssignedComplaints, useListComplaints,
   useListDepartments, useListMyComplaints, useListNotifications, useListUsers,
   useLogin, useRegister, useSubmitContact, useUpdateComplaintStatus, useUpdateDepartment,
-  setAuthTokenGetter,
+  setAuthTokenGetter, setBaseUrl,
 } from '@workspace/api-client-react';
 import type { Complaint, Department, User } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -28,6 +28,7 @@ import NotFound from '@/pages/not-found';
 import './index.css';
 
 const queryClient = new QueryClient();
+setBaseUrl(import.meta.env.VITE_API_URL ?? null);
 setAuthTokenGetter(() => localStorage.getItem('sg_token'));
 const storeAuth = (token: string, user: User) => {
   localStorage.setItem('sg_token', token);
