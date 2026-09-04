@@ -121,10 +121,12 @@ pnpm --filter @workspace/smart-governance-platform run serve
 Set these frontend variables:
 
 ```text
-PORT=5173
 BASE_PATH=/
 VITE_API_URL=https://<your-spring-boot-service>.up.railway.app
 ```
+
+Do not set `PORT` manually. Railway supplies the port and the Vite preview
+server reads it automatically.
 
 Set the service's output directory to
 `artifacts/smart-governance-platform/dist/public` if Railway asks for one.
