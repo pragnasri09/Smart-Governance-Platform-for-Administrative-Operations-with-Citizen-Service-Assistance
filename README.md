@@ -89,6 +89,9 @@ pnpm --filter @workspace/smart-governance-platform run dev
 Open http://localhost:5173. The Vite proxy forwards `/api` requests to the API on
 http://localhost:3000.
 
+The frontend defaults to port `5173` and base path `/`. Set `PORT` or `BASE_PATH`
+only when using different deployment values.
+
 ### Production/deployment precautions
 
 - Do not commit `.env`, passwords, JWT secrets, database dumps, `node_modules`, Maven `target`, or build output.

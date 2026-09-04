@@ -180,7 +180,7 @@ function PageHeader({ eyebrow, title, children, description }: { eyebrow: string
   return <div className="page-header"><div><span className="eyebrow">{eyebrow}</span><h1>{title}</h1>{description && <p>{description}</p>}</div>{children && <div className="page-header-actions">{children}</div>}</div>;
 }
 function DashboardGreeting({ name, role, children }: { name?: string; role: string; children?: ReactNode }) {
-  return <div className="dashboard-greeting"><div><span className="eyebrow">{role} overview</span><h1>Good morning, {firstName(name)}.</h1><p>Here’s what needs your attention today.</p></div>{children}</div>;
+  return <div className="dashboard-greeting"><div><span className="eyebrow">{role} overview</span><h1>Welcome, {firstName(name)}.</h1><p>Here’s what needs your attention today.</p></div>{children}</div>;
 }
 function CitizenDashboard() {
   const query = useGetCitizenDashboard();
