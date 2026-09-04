@@ -8,6 +8,8 @@ CivicPulse is a complete civic-service workflow for reporting issues, processing
 - Role selection with separate citizen, service staff, and administrator access
 - JWT authentication, BCrypt-compatible password hashing, and role-based API authorization
 - Citizen complaint submission, history, detail timeline, and notifications
+- Optional incident photo upload (maximum 5 MB) visible in complaint details
+- Complaint coordinates displayed on the map for citizens, service staff, and administrators
 - Staff assigned-work queue with status, remarks, and resolution updates
 - Administrator dashboards, user/staff directories, department CRUD, complaint oversight, reports, and notifications
 - MySQL persistence through Spring Data JPA and Flyway migrations
@@ -18,11 +20,11 @@ CivicPulse is a complete civic-service workflow for reporting issues, processing
 
 The API seeds demo data on startup. These accounts are for preview and development only:
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Administrator | `admin1@teamb.com` | `12345678` |
-| Citizen | `citizen1@teamb.com` | `12345678` |
-| Service staff | `road1@teamb.com` | `12345678` |
+| Role          | Email                | Password   |
+| ------------- | -------------------- | ---------- |
+| Administrator | `admin1@teamb.com`   | `12345678` |
+| Citizen       | `citizen1@teamb.com` | `12345678` |
+| Service staff | `road1@teamb.com`    | `12345678` |
 
 ## Run locally on Windows
 
@@ -130,6 +132,28 @@ server reads it automatically.
 
 Set the service's output directory to
 `artifacts/smart-governance-platform/dist/public` if Railway asks for one.
+
+Current Railway deployment:
+
+```text
+Frontend: https://civicpulse-teamb.up.railway.app
+Backend:  https://civicpulse-teamb-backend.up.railway.app
+Health:   https://civicpulse-teamb-backend.up.railway.app/api/healthz
+```
+
+The frontend service uses the repository root, pnpm workspace installation, and
+the `serve.mjs` static server. Railway supplies the `PORT` variable; do not set
+it manually. Set `VITE_API_URL` to the backend URL above and set the backend
+`CORS_ORIGIN` to the frontend URL above.
+
+### Complaint location and photo behavior
+
+Citizens must select the incident point on the map and provide a readable
+location. The latitude and longitude are stored in MySQL and shown on the
+complaint detail page for every role. Citizens may optionally attach one image
+from the complaint form. Images are converted to a data URL and stored in the
+complaint record, with a 5 MB limit. The Flyway migration
+`V3__add_complaint_photo.sql` creates the required column.
 
 Useful checks:
 

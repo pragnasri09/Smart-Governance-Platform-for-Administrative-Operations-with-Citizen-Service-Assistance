@@ -448,6 +448,7 @@ components:
         location: { type: string }
         latitude: { type: ["number", "null"], format: double }
         longitude: { type: ["number", "null"], format: double }
+        photoData: { type: ["string", "null"] }
         status:
           $ref: "#/components/schemas/ComplaintStatus"
         citizenId: { type: integer }
@@ -460,7 +461,28 @@ components:
         resolution: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: string }
-      required: [id, reference, title, category, description, location, latitude, longitude, status, citizenId, citizenName, departmentId, departmentName, assignedStaffId, assignedStaffName, remarks, resolution, createdAt, updatedAt]
+      required:
+        [
+          id,
+          reference,
+          title,
+          category,
+          description,
+          location,
+          latitude,
+          longitude,
+          status,
+          citizenId,
+          citizenName,
+          departmentId,
+          departmentName,
+          assignedStaffId,
+          assignedStaffName,
+          remarks,
+          resolution,
+          createdAt,
+          updatedAt,
+        ]
     Notification:
       type: object
       properties:
@@ -505,7 +527,17 @@ components:
         location: { type: string, minLength: 2 }
         latitude: { type: number, format: double, minimum: -90, maximum: 90 }
         longitude: { type: number, format: double, minimum: -180, maximum: 180 }
-      required: [title, category, departmentId, description, location, latitude, longitude]
+        photoData: { type: ["string", "null"], maxLength: 7000000 }
+      required:
+        [
+          title,
+          category,
+          departmentId,
+          description,
+          location,
+          latitude,
+          longitude,
+        ]
     ComplaintUpdate:
       type: object
       properties:
@@ -576,7 +608,16 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Complaint"
-      required: [totalUsers, totalComplaints, resolvedComplaints, departments, statusBreakdown, departmentBreakdown, recent]
+      required:
+        [
+          totalUsers,
+          totalComplaints,
+          resolvedComplaints,
+          departments,
+          statusBreakdown,
+          departmentBreakdown,
+          recent,
+        ]
     ContactMessage:
       type: object
       properties:

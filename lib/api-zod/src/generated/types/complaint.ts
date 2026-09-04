@@ -18,6 +18,8 @@ export interface Complaint {
   latitude: number | null;
   /** @nullable */
   longitude: number | null;
+  /** @nullable */
+  photoData: string | null;
   status: ComplaintStatus;
   citizenId: number;
   citizenName: string;

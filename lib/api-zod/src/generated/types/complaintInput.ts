@@ -26,4 +26,6 @@ export interface ComplaintInput {
      * @maximum 180
      */
   longitude: number;
+  /** @nullable */
+  photoData?: string | null;
 }
