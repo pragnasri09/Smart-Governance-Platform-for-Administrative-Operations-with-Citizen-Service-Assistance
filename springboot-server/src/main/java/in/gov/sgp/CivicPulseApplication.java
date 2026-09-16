@@ -6,5 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 public class CivicPulseApplication {
-  public static void main(String[] args) { SpringApplication.run(CivicPulseApplication.class, args); }
+  public static void main(String[] args) {
+    SpringApplication.run(CivicPulseApplication.class, args);
+  }
 }
