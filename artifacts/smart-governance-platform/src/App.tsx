@@ -543,7 +543,7 @@ function PublicFooter() {
           {health.data ? "Service operational" : "Service status"}
         </span>
       </div>
-      <span className="copyright">© 2024 CivicPulse</span>
+      <span className="copyright">© 2026 CivicPulse</span>
     </footer>
   );
 }
