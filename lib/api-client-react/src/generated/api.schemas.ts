@@ -26,6 +26,17 @@ export const ComplaintStatus = {
   ASSIGNED: 'ASSIGNED',
   IN_PROGRESS: 'IN_PROGRESS',
   RESOLVED: 'RESOLVED',
+  REOPENED: 'REOPENED',
+  CLOSED: 'CLOSED',
+  REJECTED: 'REJECTED',
+} as const;
+
+export type VerificationStatus = typeof VerificationStatus[keyof typeof VerificationStatus];
+
+
+export const VerificationStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
   REJECTED: 'REJECTED',
 } as const;
 
@@ -75,6 +86,11 @@ export interface Complaint {
   remarks: string | null;
   /** @nullable */
   resolution: string | null;
+  verificationStatus: VerificationStatus;
+  /** @nullable */
+  verifiedAt: string | null;
+  /** @nullable */
+  reopenReason: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -134,8 +150,11 @@ export interface ComplaintInput {
   departmentId: number;
   /** @minLength 10 */
   description: string;
-  /** @minLength 2 */
-  location: string;
+  /**
+     * Deprecated compatibility field; the server derives the stored location from map coordinates.
+     * @maxLength 180
+     */
+  location?: string;
   /**
      * @minimum -90
      * @maximum 90
@@ -161,6 +180,55 @@ export interface ComplaintUpdate {
   resolution?: string | null;
   /** @nullable */
   assignedStaffId?: number | null;
+}
+
+export interface VerificationInput {
+  accepted: boolean;
+  /**
+     * @minLength 5
+     * @maxLength 1000
+     * @nullable
+     */
+  reason?: string | null;
+}
+
+export interface History {
+  id: number;
+  eventType: string;
+  description: string;
+  /** @nullable */
+  performedBy: number | null;
+  /** @nullable */
+  performedByName: string | null;
+  eventAt: string;
+}
+
+export interface ImpactBreakdown {
+  severity: number;
+  affectedCitizens: number;
+  recurrence: number;
+  age: number;
+  location: number;
+}
+
+export interface ImpactScore {
+  impactScore: number;
+  breakdown: ImpactBreakdown;
+}
+
+export interface RelatedComplaint {
+  complaintId: number;
+  reference: string;
+  title: string;
+  similarity: number;
+}
+
+export interface EmergingIssue {
+  category: string;
+  area: string;
+  recentComplaints: number;
+  increasePercent: number;
+  risk: string;
 }
 
 export interface DepartmentInput {

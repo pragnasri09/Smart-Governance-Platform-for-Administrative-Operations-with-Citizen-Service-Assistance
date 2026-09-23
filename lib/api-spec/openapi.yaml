@@ -383,6 +383,91 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Notification"
+  /complaints/{id}/timeline:
+    get:
+      operationId: getComplaintTimeline
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: Get the chronological complaint audit trail
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Complaint timeline
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/History"
+  /complaints/{id}/verify:
+    post:
+      operationId: verifyComplaintResolution
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: Accept or reject a resolved complaint
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerificationInput"
+      responses:
+        "200":
+          description: Verified complaint
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Complaint"
+  /complaints/{id}/impact-score:
+    get:
+      operationId: getComplaintImpactScore
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: Get an explainable civic impact score
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Impact score
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImpactScore"
+  /complaints/{id}/related:
+    get:
+      operationId: getRelatedComplaints
+      tags: [complaints]
+      security: [{ bearerAuth: [] }]
+      summary: Get potentially related complaints
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Related complaints
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RelatedComplaint"
+  /analytics/emerging-issues:
+    get:
+      operationId: getEmergingIssues
+      tags: [dashboard]
+      security: [{ bearerAuth: [] }]
+      summary: Detect statistically emerging civic issues
+      responses:
+        "200":
+          description: Emerging issues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmergingIssue"
   /contact:
     post:
       operationId: submitContact
@@ -443,7 +528,11 @@ components:
       enum: [CITIZEN, STAFF, ADMIN]
     ComplaintStatus:
       type: string
-      enum: [PENDING, ASSIGNED, IN_PROGRESS, RESOLVED, REJECTED]
+      enum:
+        [PENDING, ASSIGNED, IN_PROGRESS, RESOLVED, REOPENED, CLOSED, REJECTED]
+    VerificationStatus:
+      type: string
+      enum: [PENDING, ACCEPTED, REJECTED]
     User:
       type: object
       properties:
@@ -487,6 +576,10 @@ components:
         assignedStaffName: { type: ["string", "null"] }
         remarks: { type: ["string", "null"] }
         resolution: { type: ["string", "null"] }
+        verificationStatus:
+          $ref: "#/components/schemas/VerificationStatus"
+        verifiedAt: { type: ["string", "null"] }
+        reopenReason: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: string }
       required:
@@ -508,6 +601,9 @@ components:
           assignedStaffName,
           remarks,
           resolution,
+          verificationStatus,
+          verifiedAt,
+          reopenReason,
           createdAt,
           updatedAt,
         ]
@@ -558,20 +654,17 @@ components:
         category: { type: string, minLength: 2 }
         departmentId: { type: integer }
         description: { type: string, minLength: 10 }
-        location: { type: string, minLength: 2 }
+        location:
+          {
+            type: string,
+            maxLength: 180,
+            description: "Deprecated compatibility field; the server derives the stored location from map coordinates.",
+          }
         latitude: { type: number, format: double, minimum: -90, maximum: 90 }
         longitude: { type: number, format: double, minimum: -180, maximum: 180 }
         photoData: { type: ["string", "null"], maxLength: 7000000 }
       required:
-        [
-          title,
-          category,
-          departmentId,
-          description,
-          location,
-          latitude,
-          longitude,
-        ]
+        [title, category, departmentId, description, latitude, longitude]
     ComplaintUpdate:
       type: object
       properties:
@@ -581,6 +674,56 @@ components:
         resolution: { type: ["string", "null"] }
         assignedStaffId: { type: ["integer", "null"] }
       required: [status]
+    VerificationInput:
+      type: object
+      properties:
+        accepted: { type: boolean }
+        reason: { type: ["string", "null"], minLength: 5, maxLength: 1000 }
+      required: [accepted]
+    History:
+      type: object
+      properties:
+        id: { type: integer }
+        eventType: { type: string }
+        description: { type: string }
+        performedBy: { type: ["integer", "null"] }
+        performedByName: { type: ["string", "null"] }
+        eventAt: { type: string }
+      required:
+        [id, eventType, description, performedBy, performedByName, eventAt]
+    ImpactBreakdown:
+      type: object
+      properties:
+        severity: { type: integer }
+        affectedCitizens: { type: integer }
+        recurrence: { type: integer }
+        age: { type: integer }
+        location: { type: integer }
+      required: [severity, affectedCitizens, recurrence, age, location]
+    ImpactScore:
+      type: object
+      properties:
+        impactScore: { type: integer }
+        breakdown:
+          $ref: "#/components/schemas/ImpactBreakdown"
+      required: [impactScore, breakdown]
+    RelatedComplaint:
+      type: object
+      properties:
+        complaintId: { type: integer }
+        reference: { type: string }
+        title: { type: string }
+        similarity: { type: integer }
+      required: [complaintId, reference, title, similarity]
+    EmergingIssue:
+      type: object
+      properties:
+        category: { type: string }
+        area: { type: string }
+        recentComplaints: { type: integer }
+        increasePercent: { type: number }
+        risk: { type: string }
+      required: [category, area, recentComplaints, increasePercent, risk]
     DepartmentInput:
       type: object
       properties:

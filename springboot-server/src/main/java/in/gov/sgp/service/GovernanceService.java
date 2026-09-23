@@ -20,27 +20,39 @@ public class GovernanceService {
     private final UserRepository users;
     private final DepartmentRepository departments;
     private final ComplaintRepository complaints;
+    private final ComplaintHistoryRepository history;
     private final NotificationRepository notifications;
     private final ContactMessageRepository contacts;
     private final PasswordEncoder encoder;
     private final JwtService jwt;
+    private final ImpactScoreService impactScores;
+    private final ComplaintSimilarityService similarity;
+    private final IndiaLocationValidator indiaLocationValidator;
 
     public GovernanceService(
             UserRepository u,
             DepartmentRepository d,
             ComplaintRepository c,
+            ComplaintHistoryRepository h,
             NotificationRepository n,
             ContactMessageRepository cm,
             PasswordEncoder e,
-            JwtService j
+            JwtService j,
+            ImpactScoreService is,
+            ComplaintSimilarityService ss,
+            IndiaLocationValidator ilv
     ) {
         users = u;
         departments = d;
         complaints = c;
+        history = h;
         notifications = n;
         contacts = cm;
         encoder = e;
         jwt = j;
+        impactScores = is;
+        similarity = ss;
+        indiaLocationValidator = ilv;
     }
 
     public User current(Authentication a) {
@@ -104,6 +116,9 @@ public class GovernanceService {
                 staff == null ? null : staff.getName(),
                 c.getRemarks(),
                 c.getResolution(),
+                c.getVerificationStatus(),
+                c.getVerifiedAt(),
+                c.getReopenReason(),
                 c.getCreatedAt(),
                 c.getUpdatedAt()
         );
@@ -264,8 +279,7 @@ public class GovernanceService {
         String text = (
                 x.category() + " " +
                 x.title() + " " +
-                x.description() + " " +
-                x.location()
+                x.description()
         ).toLowerCase(Locale.ROOT);
 
         String name =
@@ -319,6 +333,12 @@ public class GovernanceService {
             ComplaintRequest x
     ) {
         var citizen = current(a);
+        if (!indiaLocationValidator.isWithinIndia(x.latitude(), x.longitude())) {
+            throw new IllegalArgumentException(
+                    "Incident location must be within India."
+            );
+        }
+
         var d = routeDepartment(x);
         var c = new Complaint();
 
@@ -333,7 +353,7 @@ public class GovernanceService {
         c.setTitle(x.title().trim());
         c.setCategory(x.category().trim());
         c.setDescription(x.description().trim());
-        c.setLocation(x.location().trim());
+        c.setLocation(coordinateLocationLabel(x.latitude(), x.longitude()));
         c.setLatitude(x.latitude());
         c.setLongitude(x.longitude());
         c.setPhotoData(x.photoData());
@@ -343,6 +363,9 @@ public class GovernanceService {
         c.setAssignedStaff(autoAssign(d));
 
         c = complaints.save(c);
+        addHistory(c, HistoryEventType.CREATED, "Complaint submitted.", citizen);
+        addHistory(c, HistoryEventType.ASSIGNED,
+                "Complaint assigned to " + c.getDepartment().getName() + ".", citizen);
 
         notify(
                 citizen,
@@ -362,6 +385,113 @@ public class GovernanceService {
         );
 
         return complaintDto(c);
+    }
+
+    private String coordinateLocationLabel(double latitude, double longitude) {
+        return String.format(
+                Locale.ROOT,
+                "Map coordinates: %.6f, %.6f",
+                latitude,
+                longitude
+        );
+    }
+
+    public List<HistoryDto> timeline(Authentication a, long id) {
+        Complaint c = accessibleComplaint(a, id);
+        return history.findByComplaintOrderByEventAtAsc(c).stream()
+                .map(h -> new HistoryDto(
+                        h.getId(), h.getEventType(), h.getDescription(),
+                        h.getPerformedBy() == null ? null : h.getPerformedBy().getId(),
+                        h.getPerformedBy() == null ? null : h.getPerformedBy().getName(),
+                        h.getEventAt()))
+                .toList();
+    }
+
+    public ComplaintDto verify(Authentication a, long id, VerificationRequest request) {
+        User citizen = current(a);
+        Complaint c = accessibleComplaint(a, id);
+        if (!c.getCitizen().getId().equals(citizen.getId()))
+            throw new ForbiddenException("Only the complaint citizen can verify a resolution.");
+        if (c.getStatus() != ComplaintStatus.RESOLVED)
+            throw new IllegalArgumentException("A complaint must be RESOLVED before citizen verification.");
+        if (c.getVerificationStatus() != VerificationStatus.PENDING)
+            throw new IllegalArgumentException("This resolution has already been verified.");
+        if (!request.accepted() && (request.reason() == null || request.reason().isBlank()))
+            throw new IllegalArgumentException("A reason is required when rejecting a resolution.");
+
+        c.setVerifiedAt(Instant.now());
+        c.setVerificationStatus(request.accepted() ? VerificationStatus.ACCEPTED : VerificationStatus.REJECTED);
+        c.setReopenReason(request.accepted() ? null : request.reason().trim());
+        c.setStatus(request.accepted() ? ComplaintStatus.CLOSED : ComplaintStatus.REOPENED);
+        c = complaints.save(c);
+        addHistory(c, request.accepted() ? HistoryEventType.CLOSED : HistoryEventType.REOPENED,
+                request.accepted() ? "Citizen verified the resolution and closed the complaint."
+                        : "Citizen rejected the resolution: " + request.reason().trim(), citizen);
+        if (!request.accepted() && c.getAssignedStaff() != null)
+            notify(c.getAssignedStaff(), c, "Complaint " + c.getReference() + " was reopened by the citizen.");
+        return complaintDto(c);
+    }
+
+    public ImpactScoreDto impactScore(Authentication a, long id) {
+        return impactScore(accessibleComplaint(a, id));
+    }
+
+    public List<RelatedComplaintDto> related(Authentication a, long id) {
+        Complaint source = accessibleComplaint(a, id);
+        return complaints.findAllByOrderByCreatedAtDesc().stream()
+                .filter(other -> !other.getId().equals(source.getId()))
+                .map(other -> new RelatedComplaintDto(other.getId(), other.getReference(), other.getTitle(),
+                        similarity.score(source, other)))
+                .filter(item -> item.similarity() >= 50)
+                .sorted(Comparator.comparingInt(RelatedComplaintDto::similarity).reversed())
+                .limit(10)
+                .toList();
+    }
+
+    public List<EmergingIssueDto> emergingIssues(Authentication a) {
+        current(a);
+        Instant now = Instant.now();
+        long periodDays = 7;
+        Instant currentStart = now.minus(periodDays, java.time.temporal.ChronoUnit.DAYS);
+        Instant previousStart = currentStart.minus(periodDays, java.time.temporal.ChronoUnit.DAYS);
+        Map<String, List<Complaint>> groups = complaints.findAllByOrderByCreatedAtDesc().stream()
+                .filter(c -> c.getCreatedAt().isAfter(previousStart))
+                .collect(Collectors.groupingBy(c -> c.getCategory() + "|" + c.getLocation()));
+        return groups.entrySet().stream().map(entry -> {
+                    List<Complaint> values = entry.getValue();
+                    long recent = values.stream().filter(c -> c.getCreatedAt().isAfter(currentStart)).count();
+                    long previous = values.size() - recent;
+                    double increase = previous == 0 ? (recent > 0 ? 100 : 0) : (recent - previous) * 100d / previous;
+                    String[] parts = entry.getKey().split("\\|", 2);
+                    String risk = recent >= 10 && increase >= 75 ? "HIGH" : recent >= 5 && increase >= 40 ? "MEDIUM" : "LOW";
+                    return new EmergingIssueDto(parts[0], parts[1], recent, Math.round(increase * 10) / 10d, risk);
+                })
+                .filter(issue -> issue.recentComplaints() >= 3 && issue.increasePercent() >= 25)
+                .sorted(Comparator.comparingDouble(EmergingIssueDto::increasePercent).reversed())
+                .toList();
+    }
+
+    private ImpactScoreDto impactScore(Complaint c) {
+        return new ImpactScoreDto(impactScores.score(c), impactScores.breakdown(c));
+    }
+
+    private Complaint accessibleComplaint(Authentication a, long id) {
+        Complaint c = complaints.findById(id).orElseThrow(() -> new NotFoundException("Complaint not found."));
+        User u = current(a);
+        if (u.getRole() == Role.CITIZEN && !c.getCitizen().getId().equals(u.getId()))
+            throw new NotFoundException("Complaint not found.");
+        if (u.getRole() == Role.STAFF && (c.getAssignedStaff() == null || !c.getAssignedStaff().getId().equals(u.getId())))
+            throw new NotFoundException("Complaint not found.");
+        return c;
+    }
+
+    private void addHistory(Complaint c, HistoryEventType type, String description, User user) {
+        var event = new ComplaintHistory();
+        event.setComplaint(c);
+        event.setEventType(type);
+        event.setDescription(description);
+        event.setPerformedBy(user);
+        history.save(event);
     }
 
     public UserDto updateProfile(
@@ -392,6 +522,7 @@ public class GovernanceService {
                 );
 
         notifications.deleteByComplaint(complaint);
+        history.deleteByComplaint(complaint);
         complaints.delete(complaint);
     }
 
@@ -473,6 +604,8 @@ public class GovernanceService {
     ) {
         return from == ComplaintStatus.ASSIGNED &&
                 to == ComplaintStatus.IN_PROGRESS ||
+                from == ComplaintStatus.REOPENED &&
+                to == ComplaintStatus.IN_PROGRESS ||
                 from == ComplaintStatus.IN_PROGRESS &&
                 (
                         to == ComplaintStatus.RESOLVED ||
@@ -515,7 +648,16 @@ public class GovernanceService {
         if (x.resolution() != null)
             c.setResolution(x.resolution());
 
+        if (x.status() == ComplaintStatus.RESOLVED && c.getResolution() == null)
+            throw new IllegalArgumentException("A resolution description is required.");
+
         c = complaints.save(c);
+        addHistory(c, HistoryEventType.STATUS_CHANGED,
+                "Status changed to " + c.getStatus().name() + ".", u);
+        if (x.status() == ComplaintStatus.RESOLVED) {
+            addHistory(c, HistoryEventType.RESOLUTION_CREATED, "Resolution submitted.", u);
+            addHistory(c, HistoryEventType.RESOLVED, "Complaint marked as resolved.", u);
+        }
 
         notify(
                 c.getCitizen(),

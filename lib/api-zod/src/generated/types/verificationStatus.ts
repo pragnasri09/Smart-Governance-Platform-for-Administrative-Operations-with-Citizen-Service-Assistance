@@ -6,15 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ComplaintStatus = typeof ComplaintStatus[keyof typeof ComplaintStatus];
+export type VerificationStatus = typeof VerificationStatus[keyof typeof VerificationStatus];
 
 
-export const ComplaintStatus = {
+export const VerificationStatus = {
   PENDING: 'PENDING',
-  ASSIGNED: 'ASSIGNED',
-  IN_PROGRESS: 'IN_PROGRESS',
-  RESOLVED: 'RESOLVED',
-  REOPENED: 'REOPENED',
-  CLOSED: 'CLOSED',
+  ACCEPTED: 'ACCEPTED',
   REJECTED: 'REJECTED',
 } as const;

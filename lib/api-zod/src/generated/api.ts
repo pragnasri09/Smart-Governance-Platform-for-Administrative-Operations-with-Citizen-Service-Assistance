@@ -104,7 +104,7 @@ export const GetCitizenDashboardResponse = zod.object({
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
   "photoData": zod.string().nullish(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
   "departmentId": zod.int(),
@@ -113,6 +113,9 @@ export const GetCitizenDashboardResponse = zod.object({
   "assignedStaffName": zod.string().nullable(),
   "remarks": zod.string().nullable(),
   "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 }))
@@ -137,7 +140,7 @@ export const GetStaffDashboardResponse = zod.object({
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
   "photoData": zod.string().nullish(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
   "departmentId": zod.int(),
@@ -146,6 +149,9 @@ export const GetStaffDashboardResponse = zod.object({
   "assignedStaffName": zod.string().nullable(),
   "remarks": zod.string().nullable(),
   "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 }))
@@ -175,7 +181,7 @@ export const GetAdminDashboardResponse = zod.object({
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
   "photoData": zod.string().nullish(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
   "departmentId": zod.int(),
@@ -184,6 +190,9 @@ export const GetAdminDashboardResponse = zod.object({
   "assignedStaffName": zod.string().nullable(),
   "remarks": zod.string().nullable(),
   "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 }))
@@ -325,7 +334,7 @@ export const DeleteDepartmentResponse = zod.void()
  */
 export const ListComplaintsQueryParams = zod.object({
   "search": zod.coerce.string().optional(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']).optional(),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']).optional(),
   "departmentId": zod.coerce.number().int().optional()
 })
 
@@ -339,7 +348,7 @@ export const ListComplaintsResponseItem = zod.object({
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
   "photoData": zod.string().nullish(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
   "departmentId": zod.int(),
@@ -348,6 +357,9 @@ export const ListComplaintsResponseItem = zod.object({
   "assignedStaffName": zod.string().nullable(),
   "remarks": zod.string().nullable(),
   "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -363,7 +375,7 @@ export const createComplaintBodyCategoryMin = 2;
 
 export const createComplaintBodyDescriptionMin = 10;
 
-export const createComplaintBodyLocationMin = 2;
+export const createComplaintBodyLocationMax = 180;
 
 export const createComplaintBodyLatitudeMin = -90;
 export const createComplaintBodyLatitudeMax = 90;
@@ -380,7 +392,7 @@ export const CreateComplaintBody = zod.object({
   "category": zod.string().min(createComplaintBodyCategoryMin),
   "departmentId": zod.int(),
   "description": zod.string().min(createComplaintBodyDescriptionMin),
-  "location": zod.string().min(createComplaintBodyLocationMin),
+  "location": zod.string().max(createComplaintBodyLocationMax).optional().describe('Deprecated compatibility field; the server derives the stored location from map coordinates.'),
   "latitude": zod.number().min(createComplaintBodyLatitudeMin).max(createComplaintBodyLatitudeMax),
   "longitude": zod.number().min(createComplaintBodyLongitudeMin).max(createComplaintBodyLongitudeMax),
   "photoData": zod.string().max(createComplaintBodyPhotoDataMax).nullish()
@@ -396,7 +408,7 @@ export const CreateComplaintResponse = zod.object({
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
   "photoData": zod.string().nullish(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
   "departmentId": zod.int(),
@@ -405,6 +417,9 @@ export const CreateComplaintResponse = zod.object({
   "assignedStaffName": zod.string().nullable(),
   "remarks": zod.string().nullable(),
   "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -414,7 +429,7 @@ export const CreateComplaintResponse = zod.object({
  * @summary List complaints submitted by the current citizen
  */
 export const ListMyComplaintsQueryParams = zod.object({
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']).optional(),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']).optional(),
   "search": zod.coerce.string().optional()
 })
 
@@ -428,7 +443,7 @@ export const ListMyComplaintsResponseItem = zod.object({
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
   "photoData": zod.string().nullish(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
   "departmentId": zod.int(),
@@ -437,6 +452,9 @@ export const ListMyComplaintsResponseItem = zod.object({
   "assignedStaffName": zod.string().nullable(),
   "remarks": zod.string().nullable(),
   "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -447,7 +465,7 @@ export const ListMyComplaintsResponse = zod.array(ListMyComplaintsResponseItem)
  * @summary List complaints assigned to current staff member
  */
 export const ListAssignedComplaintsQueryParams = zod.object({
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']).optional(),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']).optional(),
   "search": zod.coerce.string().optional()
 })
 
@@ -461,7 +479,7 @@ export const ListAssignedComplaintsResponseItem = zod.object({
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
   "photoData": zod.string().nullish(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
   "departmentId": zod.int(),
@@ -470,6 +488,9 @@ export const ListAssignedComplaintsResponseItem = zod.object({
   "assignedStaffName": zod.string().nullable(),
   "remarks": zod.string().nullable(),
   "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -493,7 +514,7 @@ export const GetComplaintResponse = zod.object({
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
   "photoData": zod.string().nullish(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
   "departmentId": zod.int(),
@@ -502,6 +523,9 @@ export const GetComplaintResponse = zod.object({
   "assignedStaffName": zod.string().nullable(),
   "remarks": zod.string().nullable(),
   "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -515,7 +539,7 @@ export const UpdateComplaintStatusParams = zod.object({
 })
 
 export const UpdateComplaintStatusBody = zod.object({
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "remarks": zod.string().nullish(),
   "resolution": zod.string().nullish(),
   "assignedStaffId": zod.int().nullish()
@@ -531,7 +555,7 @@ export const UpdateComplaintStatusResponse = zod.object({
   "latitude": zod.number().nullable(),
   "longitude": zod.number().nullable(),
   "photoData": zod.string().nullish(),
-  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REJECTED']),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
   "citizenId": zod.int(),
   "citizenName": zod.string(),
   "departmentId": zod.int(),
@@ -540,6 +564,9 @@ export const UpdateComplaintStatusResponse = zod.object({
   "assignedStaffName": zod.string().nullable(),
   "remarks": zod.string().nullable(),
   "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
   "createdAt": zod.string(),
   "updatedAt": zod.string()
 })
@@ -567,6 +594,116 @@ export const ListNotificationsResponseItem = zod.object({
   "createdAt": zod.string()
 })
 export const ListNotificationsResponse = zod.array(ListNotificationsResponseItem)
+
+
+/**
+ * @summary Get the chronological complaint audit trail
+ */
+export const GetComplaintTimelineParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetComplaintTimelineResponseItem = zod.object({
+  "id": zod.int(),
+  "eventType": zod.string(),
+  "description": zod.string(),
+  "performedBy": zod.int().nullable(),
+  "performedByName": zod.string().nullable(),
+  "eventAt": zod.string()
+})
+export const GetComplaintTimelineResponse = zod.array(GetComplaintTimelineResponseItem)
+
+
+/**
+ * @summary Accept or reject a resolved complaint
+ */
+export const VerifyComplaintResolutionParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const verifyComplaintResolutionBodyReasonMin = 5;
+export const verifyComplaintResolutionBodyReasonMax = 1000;
+
+
+
+export const VerifyComplaintResolutionBody = zod.object({
+  "accepted": zod.boolean(),
+  "reason": zod.string().min(verifyComplaintResolutionBodyReasonMin).max(verifyComplaintResolutionBodyReasonMax).nullish()
+})
+
+export const VerifyComplaintResolutionResponse = zod.object({
+  "id": zod.int(),
+  "reference": zod.string(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "description": zod.string(),
+  "location": zod.string(),
+  "latitude": zod.number().nullable(),
+  "longitude": zod.number().nullable(),
+  "photoData": zod.string().nullish(),
+  "status": zod.enum(['PENDING', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'REOPENED', 'CLOSED', 'REJECTED']),
+  "citizenId": zod.int(),
+  "citizenName": zod.string(),
+  "departmentId": zod.int(),
+  "departmentName": zod.string(),
+  "assignedStaffId": zod.int().nullable(),
+  "assignedStaffName": zod.string().nullable(),
+  "remarks": zod.string().nullable(),
+  "resolution": zod.string().nullable(),
+  "verificationStatus": zod.enum(['PENDING', 'ACCEPTED', 'REJECTED']),
+  "verifiedAt": zod.string().nullable(),
+  "reopenReason": zod.string().nullable(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Get an explainable civic impact score
+ */
+export const GetComplaintImpactScoreParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetComplaintImpactScoreResponse = zod.object({
+  "impactScore": zod.int(),
+  "breakdown": zod.object({
+  "severity": zod.int(),
+  "affectedCitizens": zod.int(),
+  "recurrence": zod.int(),
+  "age": zod.int(),
+  "location": zod.int()
+})
+})
+
+
+/**
+ * @summary Get potentially related complaints
+ */
+export const GetRelatedComplaintsParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetRelatedComplaintsResponseItem = zod.object({
+  "complaintId": zod.int(),
+  "reference": zod.string(),
+  "title": zod.string(),
+  "similarity": zod.int()
+})
+export const GetRelatedComplaintsResponse = zod.array(GetRelatedComplaintsResponseItem)
+
+
+/**
+ * @summary Detect statistically emerging civic issues
+ */
+export const GetEmergingIssuesResponseItem = zod.object({
+  "category": zod.string(),
+  "area": zod.string(),
+  "recentComplaints": zod.int(),
+  "increasePercent": zod.number(),
+  "risk": zod.string()
+})
+export const GetEmergingIssuesResponse = zod.array(GetEmergingIssuesResponseItem)
 
 
 /**

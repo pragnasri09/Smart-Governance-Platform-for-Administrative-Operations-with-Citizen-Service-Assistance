@@ -14,8 +14,11 @@ export interface ComplaintInput {
   departmentId: number;
   /** @minLength 10 */
   description: string;
-  /** @minLength 2 */
-  location: string;
+  /**
+     * Deprecated compatibility field; the server derives the stored location from map coordinates.
+     * @maxLength 180
+     */
+  location?: string;
   /**
      * @minimum -90
      * @maximum 90

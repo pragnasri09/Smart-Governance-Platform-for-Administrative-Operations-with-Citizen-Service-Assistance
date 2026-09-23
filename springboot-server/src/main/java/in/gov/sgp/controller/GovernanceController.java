@@ -159,6 +159,38 @@ public class GovernanceController {
         return service.updateComplaint(a, id, x);
     }
 
+    @GetMapping("/complaints/{id}/timeline")
+    public List<HistoryDto> timeline(Authentication a, @PathVariable long id) {
+        return service.timeline(a, id);
+    }
+
+    @PostMapping("/complaints/{id}/verify")
+    @PreAuthorize("hasRole('CITIZEN')")
+    public ComplaintDto verify(
+            Authentication a,
+            @PathVariable long id,
+            @Valid @RequestBody VerificationRequest x
+    ) {
+        return service.verify(a, id, x);
+    }
+
+    @GetMapping("/complaints/{id}/impact-score")
+    public ImpactScoreDto impactScore(Authentication a, @PathVariable long id) {
+        return service.impactScore(a, id);
+    }
+
+    @GetMapping("/complaints/{id}/related")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    public List<RelatedComplaintDto> related(Authentication a, @PathVariable long id) {
+        return service.related(a, id);
+    }
+
+    @GetMapping("/analytics/emerging-issues")
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    public List<EmergingIssueDto> emergingIssues(Authentication a) {
+        return service.emergingIssues(a);
+    }
+
     @GetMapping("/notifications")
     public List<NotificationDto> notifications(Authentication a) {
         return service.notifications(a);

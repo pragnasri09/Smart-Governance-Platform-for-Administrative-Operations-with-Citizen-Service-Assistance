@@ -30,7 +30,10 @@ import type {
   ContactInput,
   Department,
   DepartmentInput,
+  EmergingIssue,
   HealthStatus,
+  History,
+  ImpactScore,
   ListAssignedComplaintsParams,
   ListComplaintsParams,
   ListMyComplaintsParams,
@@ -40,9 +43,11 @@ import type {
   Notification,
   ProfileUpdateInput,
   RegisterInput,
+  RelatedComplaint,
   StaffDashboard,
   UnauthorizedResponse,
-  User
+  User,
+  VerificationInput
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1730,6 +1735,386 @@ export function useListNotifications<TData = Awaited<ReturnType<typeof listNotif
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListNotificationsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetComplaintTimelineUrl = (id: number,) => {
+
+
+
+
+  return `/api/complaints/${id}/timeline`
+}
+
+/**
+ * @summary Get the chronological complaint audit trail
+ */
+export const getComplaintTimeline = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<History[]> => {
+
+  return customFetch<History[]>(getGetComplaintTimelineUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetComplaintTimelineQueryKey = (id: number,) => {
+    return [
+    `/api/complaints/${id}/timeline`
+    ] as const;
+    }
+
+
+export const getGetComplaintTimelineQueryOptions = <TData = Awaited<ReturnType<typeof getComplaintTimeline>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getComplaintTimeline>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetComplaintTimelineQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getComplaintTimeline>>> = ({ signal }) => getComplaintTimeline(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getComplaintTimeline>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetComplaintTimelineQueryResult = NonNullable<Awaited<ReturnType<typeof getComplaintTimeline>>>
+export type GetComplaintTimelineQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get the chronological complaint audit trail
+ */
+
+export function useGetComplaintTimeline<TData = Awaited<ReturnType<typeof getComplaintTimeline>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getComplaintTimeline>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetComplaintTimelineQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getVerifyComplaintResolutionUrl = (id: number,) => {
+
+
+
+
+  return `/api/complaints/${id}/verify`
+}
+
+/**
+ * @summary Accept or reject a resolved complaint
+ */
+export const verifyComplaintResolution = async (id: number,
+    verificationInput: VerificationInput, options?: Parameters<typeof customFetch>[1]): Promise<Complaint> => {
+
+  return customFetch<Complaint>(getVerifyComplaintResolutionUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(verificationInput)
+  }
+);}
+
+
+
+
+
+export const getVerifyComplaintResolutionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyComplaintResolution>>, TError,{id: number;data: BodyType<VerificationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof verifyComplaintResolution>>, TError,{id: number;data: BodyType<VerificationInput>}, TContext> => {
+
+const mutationKey = ['verifyComplaintResolution'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyComplaintResolution>>, {id: number;data: BodyType<VerificationInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  verifyComplaintResolution(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VerifyComplaintResolutionMutationResult = NonNullable<Awaited<ReturnType<typeof verifyComplaintResolution>>>
+    export type VerifyComplaintResolutionMutationBody = BodyType<VerificationInput>
+    export type VerifyComplaintResolutionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Accept or reject a resolved complaint
+ */
+export const useVerifyComplaintResolution = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof verifyComplaintResolution>>, TError,{id: number;data: BodyType<VerificationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof verifyComplaintResolution>>,
+        TError,
+        {id: number;data: BodyType<VerificationInput>},
+        TContext
+      > => {
+      return useMutation(getVerifyComplaintResolutionMutationOptions(options));
+    }
+
+export const getGetComplaintImpactScoreUrl = (id: number,) => {
+
+
+
+
+  return `/api/complaints/${id}/impact-score`
+}
+
+/**
+ * @summary Get an explainable civic impact score
+ */
+export const getComplaintImpactScore = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<ImpactScore> => {
+
+  return customFetch<ImpactScore>(getGetComplaintImpactScoreUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetComplaintImpactScoreQueryKey = (id: number,) => {
+    return [
+    `/api/complaints/${id}/impact-score`
+    ] as const;
+    }
+
+
+export const getGetComplaintImpactScoreQueryOptions = <TData = Awaited<ReturnType<typeof getComplaintImpactScore>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getComplaintImpactScore>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetComplaintImpactScoreQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getComplaintImpactScore>>> = ({ signal }) => getComplaintImpactScore(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getComplaintImpactScore>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetComplaintImpactScoreQueryResult = NonNullable<Awaited<ReturnType<typeof getComplaintImpactScore>>>
+export type GetComplaintImpactScoreQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get an explainable civic impact score
+ */
+
+export function useGetComplaintImpactScore<TData = Awaited<ReturnType<typeof getComplaintImpactScore>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getComplaintImpactScore>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetComplaintImpactScoreQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetRelatedComplaintsUrl = (id: number,) => {
+
+
+
+
+  return `/api/complaints/${id}/related`
+}
+
+/**
+ * @summary Get potentially related complaints
+ */
+export const getRelatedComplaints = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<RelatedComplaint[]> => {
+
+  return customFetch<RelatedComplaint[]>(getGetRelatedComplaintsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetRelatedComplaintsQueryKey = (id: number,) => {
+    return [
+    `/api/complaints/${id}/related`
+    ] as const;
+    }
+
+
+export const getGetRelatedComplaintsQueryOptions = <TData = Awaited<ReturnType<typeof getRelatedComplaints>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRelatedComplaints>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetRelatedComplaintsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRelatedComplaints>>> = ({ signal }) => getRelatedComplaints(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getRelatedComplaints>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetRelatedComplaintsQueryResult = NonNullable<Awaited<ReturnType<typeof getRelatedComplaints>>>
+export type GetRelatedComplaintsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get potentially related complaints
+ */
+
+export function useGetRelatedComplaints<TData = Awaited<ReturnType<typeof getRelatedComplaints>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRelatedComplaints>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetRelatedComplaintsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetEmergingIssuesUrl = () => {
+
+
+
+
+  return `/api/analytics/emerging-issues`
+}
+
+/**
+ * @summary Detect statistically emerging civic issues
+ */
+export const getEmergingIssues = async ( options?: Parameters<typeof customFetch>[1]): Promise<EmergingIssue[]> => {
+
+  return customFetch<EmergingIssue[]>(getGetEmergingIssuesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetEmergingIssuesQueryKey = () => {
+    return [
+    `/api/analytics/emerging-issues`
+    ] as const;
+    }
+
+
+export const getGetEmergingIssuesQueryOptions = <TData = Awaited<ReturnType<typeof getEmergingIssues>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEmergingIssues>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetEmergingIssuesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEmergingIssues>>> = ({ signal }) => getEmergingIssues({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEmergingIssues>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetEmergingIssuesQueryResult = NonNullable<Awaited<ReturnType<typeof getEmergingIssues>>>
+export type GetEmergingIssuesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Detect statistically emerging civic issues
+ */
+
+export function useGetEmergingIssues<TData = Awaited<ReturnType<typeof getEmergingIssues>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEmergingIssues>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetEmergingIssuesQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

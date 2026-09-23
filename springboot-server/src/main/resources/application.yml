@@ -24,3 +24,13 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:28800000}
   cors-origins: "${CORS_ORIGIN:http://localhost:5173,http://localhost:3000}"
   seed-demo: "${SEED_DEMO:true}"
+  impact:
+    weights:
+      severity: ${IMPACT_WEIGHT_SEVERITY:30}
+      affected-citizens: ${IMPACT_WEIGHT_AFFECTED_CITIZENS:25}
+      recurrence: ${IMPACT_WEIGHT_RECURRENCE:20}
+      age: ${IMPACT_WEIGHT_AGE:15}
+      location: ${IMPACT_WEIGHT_LOCATION:10}
+  similarity:
+    radius-km: ${SIMILARITY_RADIUS_KM:2}
+    days: ${SIMILARITY_DAYS:30}

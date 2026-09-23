@@ -52,6 +52,9 @@ public final class Dtos {
             String assignedStaffName,
             String remarks,
             String resolution,
+            VerificationStatus verificationStatus,
+            Instant verifiedAt,
+            String reopenReason,
             Instant createdAt,
             Instant updatedAt
     ) {
@@ -155,7 +158,7 @@ public final class Dtos {
             @NotBlank @Size(min = 2) String category,
             @NotNull Long departmentId,
             @NotBlank @Size(min = 10) String description,
-            @NotBlank @Size(min = 2) String location,
+            @Size(max = 180) String location,
             @NotNull
             @DecimalMin("-90.0")
             @DecimalMax("90.0")
@@ -173,6 +176,45 @@ public final class Dtos {
             String remarks,
             String resolution,
             Long assignedStaffId
+    ) {
+    }
+
+    public record VerificationRequest(
+            @NotNull Boolean accepted,
+            @Size(min = 5, max = 1000) String reason
+    ) {
+    }
+
+    public record HistoryDto(
+            Long id,
+            HistoryEventType eventType,
+            String description,
+            Long performedBy,
+            String performedByName,
+            Instant eventAt
+    ) {
+    }
+
+    public record ImpactScoreDto(
+            int impactScore,
+            ImpactScoreBreakdown breakdown
+    ) {
+    }
+
+    public record RelatedComplaintDto(
+            Long complaintId,
+            String reference,
+            String title,
+            int similarity
+    ) {
+    }
+
+    public record EmergingIssueDto(
+            String category,
+            String area,
+            long recentComplaints,
+            double increasePercent,
+            String risk
     ) {
     }
 

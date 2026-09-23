@@ -67,6 +67,11 @@ import {
   useGetAdminDashboard,
   useGetCitizenDashboard,
   useGetComplaint,
+  useGetComplaintImpactScore,
+  useGetComplaintTimeline,
+  useGetRelatedComplaints,
+  useGetEmergingIssues,
+  useVerifyComplaintResolution,
   useGetCurrentUser,
   getGetCurrentUserQueryKey,
   useGetProfile,
@@ -127,7 +132,7 @@ const statusLabel = (value?: string) =>
         .replace(/^\w/, (c) => c.toUpperCase())
     : "Unknown";
 const nextStatuses = (status: ComplaintStatus) =>
-  status === ComplaintStatus.ASSIGNED
+  status === ComplaintStatus.ASSIGNED || status === ComplaintStatus.REOPENED
     ? [ComplaintStatus.IN_PROGRESS]
     : status === ComplaintStatus.IN_PROGRESS
       ? [ComplaintStatus.RESOLVED, ComplaintStatus.REJECTED]
@@ -1434,6 +1439,7 @@ function CitizenDashboard() {
 }
 function StaffDashboard() {
   const query = useGetStaffDashboard();
+  const emerging = useGetEmergingIssues();
   if (query.isLoading) return <LoadingState />;
   if (query.isError) return <ErrorState onRetry={() => query.refetch()} />;
   const d = query.data;
@@ -1499,6 +1505,26 @@ function StaffDashboard() {
             />
           )}
         </section>
+        {emerging.data?.length ? (
+          <section className="surface panel">
+            <span className="eyebrow">Emerging civic issues</span>
+            <h2>Watch the trend</h2>
+            {emerging.data.slice(0, 4).map((issue) => (
+              <div
+                className="complaint-row compact"
+                key={`${issue.category}-${issue.area}`}
+              >
+                <div className="complaint-main">
+                  <strong>{issue.category}</strong>
+                  <span>
+                    {issue.area} · {issue.recentComplaints} recent complaints
+                  </span>
+                </div>
+                <StatusPill status={issue.risk} />
+              </div>
+            ))}
+          </section>
+        ) : null}
         <aside className="surface panel next-panel dark-panel">
           <span className="eyebrow">Service note</span>
           <h2>Close the loop with context.</h2>
@@ -1696,6 +1722,87 @@ function LocationPicker({
     />
   ) : null;
 }
+
+const indiaBoundary: [number, number][] = [
+  [23.6, 68.1],
+  [24.2, 68.8],
+  [24.6, 70.2],
+  [24.1, 71.5],
+  [24.7, 72.6],
+  [26.0, 73.4],
+  [27.0, 74.5],
+  [28.2, 75.7],
+  [29.4, 76.5],
+  [30.5, 77.4],
+  [31.5, 78.5],
+  [32.6, 79.4],
+  [34.0, 80.2],
+  [35.2, 81.2],
+  [35.8, 83.0],
+  [35.5, 85.0],
+  [30.5, 87.2],
+  [28.5, 88.4],
+  [27.0, 89.8],
+  [26.0, 91.5],
+  [26.0, 93.2],
+  [27.0, 94.5],
+  [28.0, 95.2],
+  [25.0, 94.4],
+  [23.0, 93.2],
+  [22.0, 92.3],
+  [21.6, 91.0],
+  [22.2, 89.7],
+  [21.5, 88.4],
+  [21.0, 87.2],
+  [20.0, 86.0],
+  [19.0, 85.0],
+  [18.0, 84.0],
+  [17.0, 83.0],
+  [16.0, 82.0],
+  [14.8, 81.0],
+  [12.8, 80.0],
+  [9.5, 78.5],
+  [8.0, 76.5],
+  [9.0, 74.0],
+  [11.5, 73.0],
+  [14.5, 72.0],
+  [17.5, 70.5],
+  [20.0, 69.0],
+];
+
+function isWithinIndia(latitude: number, longitude: number) {
+  if (
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    longitude < -180 ||
+    longitude > 180 ||
+    latitude < 6 ||
+    latitude > 37.5 ||
+    longitude < 68 ||
+    longitude > 97.5
+  ) {
+    return false;
+  }
+
+  let inside = false;
+  for (
+    let i = 0, j = indiaBoundary.length - 1;
+    i < indiaBoundary.length;
+    j = i++
+  ) {
+    const [yi, xi] = indiaBoundary[i];
+    const [yj, xj] = indiaBoundary[j];
+    if (yi > latitude !== yj > latitude) {
+      const intersectionLongitude =
+        ((xj - xi) * (latitude - yi)) / (yj - yi) + xi;
+      if (longitude < intersectionLongitude) inside = !inside;
+    }
+  }
+  return inside;
+}
+
 function MapControls({
   onLocation,
 }: {
@@ -1862,12 +1969,12 @@ function NewComplaint() {
     category: "",
     departmentId: "",
     description: "",
-    location: "",
     latitude: null as number | null,
     longitude: null as number | null,
     photoData: null as string | null,
   });
   const [error, setError] = useState("");
+  const [locationError, setLocationError] = useState("");
   const [satellite, setSatellite] = useState(false);
   const update =
     (key: keyof typeof form) =>
@@ -1881,19 +1988,34 @@ function NewComplaint() {
     form.latitude !== null && form.longitude !== null
       ? [form.latitude, form.longitude]
       : null;
+  const selectLocation = ([latitude, longitude]: [number, number]) => {
+    setForm((current) => ({ ...current, latitude, longitude }));
+    setLocationError(
+      isWithinIndia(latitude, longitude)
+        ? ""
+        : "Invalid location. Please select a location within India.",
+    );
+    setError("");
+  };
   const submit = (e: FormEvent) => {
     e.preventDefault();
+    if (!selectedCoordinates) {
+      setLocationError("Please select the incident location on the map.");
+      return;
+    }
+    if (!isWithinIndia(selectedCoordinates[0], selectedCoordinates[1])) {
+      setLocationError(
+        "Invalid location. Please select a location within India.",
+      );
+      return;
+    }
     if (
       form.title.length < 3 ||
       form.category.length < 2 ||
       !form.departmentId ||
-      form.description.length < 10 ||
-      form.location.length < 2 ||
-      !selectedCoordinates
+      form.description.length < 10
     ) {
-      setError(
-        "Please complete each field and select the issue location on the map.",
-      );
+      setError("Please complete each field before submitting the complaint.");
       return;
     }
 
@@ -1981,15 +2103,6 @@ function NewComplaint() {
                   </select>
                 </label>
               </div>
-              <label>
-                Location
-                <input
-                  value={form.location}
-                  onChange={update("location")}
-                  placeholder="Street, building, or landmark"
-                  data-testid="input-complaint-location"
-                />
-              </label>
               <div>
                 <label>Select the issue point on the map</label>
                 <button
@@ -2016,16 +2129,10 @@ function NewComplaint() {
                         : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     }
                   />
-                  <MapControls
-                    onLocation={([latitude, longitude]) =>
-                      setForm({ ...form, latitude, longitude })
-                    }
-                  />
+                  <MapControls onLocation={selectLocation} />
                   <LocationPicker
                     value={selectedCoordinates}
-                    onChange={([latitude, longitude]) =>
-                      setForm({ ...form, latitude, longitude })
-                    }
+                    onChange={selectLocation}
                   />
                 </MapContainer>
                 <small className="map-coordinates">
@@ -2033,6 +2140,14 @@ function NewComplaint() {
                     ? `Selected: ${selectedCoordinates[0].toFixed(6)}, ${selectedCoordinates[1].toFixed(6)}`
                     : "Click the map to select the exact complaint location."}
                 </small>
+                {locationError && (
+                  <small
+                    className="map-location-error"
+                    data-testid="complaint-location-error"
+                  >
+                    {locationError}
+                  </small>
+                )}
               </div>
               <label>
                 Describe the issue
@@ -2114,10 +2229,27 @@ function ComplaintDetail({
     query: { queryKey: ["complaint", Number(id)], enabled: Boolean(id) },
   });
   const update = useUpdateComplaintStatus();
+  const timelineQuery = useGetComplaintTimeline(Number(id), {
+    query: {
+      queryKey: ["complaint-timeline", Number(id)],
+      enabled: Boolean(id),
+    },
+  });
+  const impactQuery = useGetComplaintImpactScore(Number(id), {
+    query: { queryKey: ["complaint-impact", Number(id)], enabled: Boolean(id) },
+  });
+  const relatedQuery = useGetRelatedComplaints(Number(id), {
+    query: {
+      queryKey: ["complaint-related", Number(id)],
+      enabled: Boolean(id) && audience !== "citizen",
+    },
+  });
+  const verify = useVerifyComplaintResolution();
   const remove = useDeleteComplaint();
   const [status, setStatus] = useState("");
   const [remarks, setRemarks] = useState("");
   const [resolution, setResolution] = useState("");
+  const [reopenReason, setReopenReason] = useState("");
   const complaint = query.data;
   const deleteComplaint = () => {
     if (!window.confirm("Delete this complaint permanently?")) return;
@@ -2147,6 +2279,25 @@ function ComplaintDetail({
           setRemarks("");
           setResolution("");
           query.refetch();
+        },
+      },
+    );
+  };
+  const verifyResolution = (accepted: boolean) => {
+    if (!accepted && !reopenReason.trim()) {
+      window.alert("Please explain why the issue is not resolved.");
+      return;
+    }
+    verify.mutate(
+      {
+        id: complaint.id,
+        data: { accepted, reason: accepted ? null : reopenReason.trim() },
+      },
+      {
+        onSuccess: () => {
+          setReopenReason("");
+          query.refetch();
+          timelineQuery.refetch();
         },
       },
     );
@@ -2235,71 +2386,101 @@ function ComplaintDetail({
           <div className="detail-section timeline-section">
             <span className="eyebrow">Service timeline</span>
             <div className="timeline">
-              <div className="timeline-item done">
-                <i>
-                  <Check size={13} />
-                </i>
-                <div>
-                  <strong>Report received</strong>
-                  <span>{dateLabel(complaint.createdAt)}</span>
-                </div>
-              </div>
-              <div
-                className={`timeline-item ${["ASSIGNED", "IN_PROGRESS", "RESOLVED"].includes(complaint.status) ? "done" : ""}`}
-              >
-                <i>
-                  {["ASSIGNED", "IN_PROGRESS", "RESOLVED"].includes(
-                    complaint.status,
-                  ) ? (
+              {(timelineQuery.data ?? []).map((event) => (
+                <div className="timeline-item done" key={event.id}>
+                  <i>
                     <Check size={13} />
-                  ) : (
-                    <Clock3 size={13} />
-                  )}
-                </i>
-                <div>
-                  <strong>
-                    Assigned to{" "}
-                    {complaint.assignedStaffName || "the service team"}
-                  </strong>
-                  <span>
-                    {complaint.assignedStaffName
-                      ? "A team member is responsible for the next step."
-                      : "Waiting for department assignment"}
-                  </span>
+                  </i>
+                  <div>
+                    <strong>{event.description}</strong>
+                    <span>
+                      {dateLabel(event.eventAt)}
+                      {event.performedByName
+                        ? ` · ${event.performedByName}`
+                        : ""}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div
-                className={`timeline-item ${complaint.status === "RESOLVED" ? "done" : ""}`}
-              >
-                <i>
-                  {complaint.status === "RESOLVED" ? (
+              ))}
+              {!timelineQuery.data?.length && (
+                <div className="timeline-item done">
+                  <i>
                     <Check size={13} />
-                  ) : (
-                    <Clock3 size={13} />
-                  )}
-                </i>
-                <div>
-                  <strong>Resolution</strong>
-                  <span>
-                    {complaint.resolution ||
-                      "The resolution will appear here when the report is closed."}
-                  </span>
+                  </i>
+                  <div>
+                    <strong>Report received</strong>
+                    <span>{dateLabel(complaint.createdAt)}</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </section>
         <aside className="detail-aside">
           {audience === "citizen" ? (
-            <div className="surface resolution-card">
-              <span className="eyebrow">Current update</span>
-              <h3>
-                {complaint.resolution ||
-                  complaint.remarks ||
-                  "Your report is with the service team."}
-              </h3>
-              <p>We’ll keep this page updated as the work moves forward.</p>
-            </div>
+            <>
+              <div className="surface resolution-card">
+                <span className="eyebrow">Current update</span>
+                <h3>
+                  {complaint.resolution ||
+                    complaint.remarks ||
+                    "Your report is with the service team."}
+                </h3>
+                <p>We’ll keep this page updated as the work moves forward.</p>
+                {complaint.status === "RESOLVED" &&
+                  complaint.verificationStatus === "PENDING" && (
+                    <div className="verification-panel">
+                      <strong>Was this issue actually resolved?</strong>
+                      <Button onClick={() => verifyResolution(true)}>
+                        Issue Resolved
+                      </Button>
+                      <textarea
+                        value={reopenReason}
+                        onChange={(e) => setReopenReason(e.target.value)}
+                        placeholder="Tell the service team what is still wrong"
+                        rows={3}
+                      />
+                      <Button
+                        variant="secondary"
+                        onClick={() => verifyResolution(false)}
+                      >
+                        Issue Not Resolved
+                      </Button>
+                    </div>
+                  )}
+              </div>
+              {impactQuery.data && (
+                <div className="surface resolution-card impact-card">
+                  <span className="eyebrow">Civic impact score</span>
+                  <h3>{impactQuery.data.impactScore} / 100</h3>
+                  <p>
+                    Explainable priority based on severity, reach, recurrence,
+                    age, and location.
+                  </p>
+                  <small>
+                    Severity {impactQuery.data.breakdown.severity} · Affected
+                    citizens {impactQuery.data.breakdown.affectedCitizens} ·
+                    Recurrence {impactQuery.data.breakdown.recurrence}
+                  </small>
+                </div>
+              )}
+              {audience !== "citizen" && relatedQuery.data?.length ? (
+                <div className="surface resolution-card">
+                  <span className="eyebrow">
+                    Potentially related complaints
+                  </span>
+                  {relatedQuery.data.map((related) => (
+                    <Link
+                      className="text-link"
+                      href={`/${audience}/complaints/${related.complaintId}`}
+                      key={related.complaintId}
+                    >
+                      {related.reference} · {related.similarity}% similar
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </>
           ) : (
             <div className="surface update-card">
               <span className="eyebrow">Manage report</span>

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ComplaintStatus } from './complaintStatus';
+import type { VerificationStatus } from './verificationStatus';
 
 export interface Complaint {
   id: number;
@@ -33,6 +34,11 @@ export interface Complaint {
   remarks: string | null;
   /** @nullable */
   resolution: string | null;
+  verificationStatus: VerificationStatus;
+  /** @nullable */
+  verifiedAt: string | null;
+  /** @nullable */
+  reopenReason: string | null;
   createdAt: string;
   updatedAt: string;
 }

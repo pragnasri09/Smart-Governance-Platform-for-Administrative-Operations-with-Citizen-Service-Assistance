@@ -59,6 +59,16 @@ public class Complaint {
     @Column(columnDefinition = "TEXT")
     private String resolution;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_status", nullable = false, length = 20)
+    private VerificationStatus verificationStatus = VerificationStatus.PENDING;
+
+    @Column(name = "verified_at")
+    private Instant verifiedAt;
+
+    @Column(name = "reopen_reason", columnDefinition = "TEXT")
+    private String reopenReason;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -149,6 +159,18 @@ public class Complaint {
         return updatedAt;
     }
 
+    public VerificationStatus getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public Instant getVerifiedAt() {
+        return verifiedAt;
+    }
+
+    public String getReopenReason() {
+        return reopenReason;
+    }
+
     public void setReference(String v) {
         reference = v;
     }
@@ -203,5 +225,17 @@ public class Complaint {
 
     public void setResolution(String v) {
         resolution = v;
+    }
+
+    public void setVerificationStatus(VerificationStatus v) {
+        verificationStatus = v;
+    }
+
+    public void setVerifiedAt(Instant v) {
+        verifiedAt = v;
+    }
+
+    public void setReopenReason(String v) {
+        reopenReason = v;
     }
 }
